@@ -13671,7 +13671,14 @@ async function refreshRuntimeSettings() {
      return { submit_before_ms: SUBMIT_BEFORE_MS, submit_endpoint_mode: SUBMIT_ENDPOINT_MODE };
 }
 
-async function sendTelegramMarkdown(text) {
+function escapeTelegramRuntimeHtml(value) {
+     return String(value ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+}
+
+async function sendTelegramHtml(text) {
      const telegram = await getTelegramSettings();
      if (!telegram.botToken || !telegram.chatId) {
           throw new Error("Telegram bot token/chat id belum diset");
@@ -13680,7 +13687,7 @@ async function sendTelegramMarkdown(text) {
      const response = await fetch(`https://api.telegram.org/bot${telegram.botToken}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: telegram.chatId, text: text, parse_mode: "Markdown" }),
+          body: JSON.stringify({ chat_id: telegram.chatId, text: text, parse_mode: "HTML" }),
      });
 
      if (!response.ok) {
@@ -13702,13 +13709,13 @@ function formatFeeLossTelegramLines(feeLossInfo) {
      if (!feeLossInfo) {
           return "";
      }
-     return `\n*Saldo Awal Funding:* ${feeLossInfo.before_pi} PI\n*Saldo Akhir Funding:* ${feeLossInfo.after_pi} PI\n*Coin Anda Terpotong:* ${feeLossInfo.loss_pi} PI`;
+     return `\n<b>Saldo Awal Funding:</b> ${escapeTelegramRuntimeHtml(feeLossInfo.before_pi)} PI\n<b>Saldo Akhir Funding:</b> ${escapeTelegramRuntimeHtml(feeLossInfo.after_pi)} PI\n<b>Coin Anda Terpotong:</b> ${escapeTelegramRuntimeHtml(feeLossInfo.loss_pi)} PI`;
 }
 
 async function sendSuccessNotification(hash, pub, amount, network, feeLossInfo = null) {
      try {
-          const text = `✅ **Transaction Successful!**\n\n*Amount:* ${amount} PI\n*Public Key:* ${pub}\n*Hash:* ${hash}\n*Explorer:* ${getExplorerUrl(network, hash)}${formatFeeLossTelegramLines(feeLossInfo)}`;
-          await sendTelegramMarkdown(text);
+          const text = `✅ <b>Transaction Successful!</b>\n\n<b>Amount:</b> ${escapeTelegramRuntimeHtml(amount)} PI\n<b>Public Key:</b> <code>${escapeTelegramRuntimeHtml(pub)}</code>\n<b>Hash:</b> <code>${escapeTelegramRuntimeHtml(hash)}</code>\n<b>Explorer:</b> ${escapeTelegramRuntimeHtml(getExplorerUrl(network, hash))}${formatFeeLossTelegramLines(feeLossInfo)}`;
+          await sendTelegramHtml(text);
      } catch (error) {
           console.error(`Telegram Error: ${error.message}`);
      }
@@ -13716,8 +13723,8 @@ async function sendSuccessNotification(hash, pub, amount, network, feeLossInfo =
 
 async function sendFailureNotification(hash, pub, amount, network, feeLossInfo = null, workerSummary = "") {
      try {
-          const text = `❌ **Transaction Failed!**\n\n*Amount:* ${amount} PI\n*Public Key:* ${pub}\n*Hash:* ${hash || "-"}\n*Explorer:* ${getExplorerUrl(network, hash)}${formatFeeLossTelegramLines(feeLossInfo)}${workerSummary ? `\n*Workers Failed:* ${workerSummary}` : ""}`;
-          await sendTelegramMarkdown(text);
+          const text = `❌ <b>Transaction Failed!</b>\n\n<b>Amount:</b> ${escapeTelegramRuntimeHtml(amount)} PI\n<b>Public Key:</b> <code>${escapeTelegramRuntimeHtml(pub)}</code>\n<b>Hash:</b> <code>${escapeTelegramRuntimeHtml(hash || "-")}</code>\n<b>Explorer:</b> ${escapeTelegramRuntimeHtml(getExplorerUrl(network, hash))}${formatFeeLossTelegramLines(feeLossInfo)}${workerSummary ? `\n<b>Workers Failed:</b> ${escapeTelegramRuntimeHtml(workerSummary)}` : ""}`;
+          await sendTelegramHtml(text);
      } catch (error) {
           console.error(`Telegram Error: ${error.message}`);
      }
@@ -13727,12 +13734,12 @@ async function sendNewBotTelegram(botName, amount, memo) {
      const telegram = await getTelegramSettings();
      if (!telegram.botToken || !telegram.chatId) return;
      try {
-          const text = `📥 **New Bot Detected: ${botName}**\n\n*Amount:* ${amount || "0"} PI\n*Memo:* ${memo || "-"}\n*Developer: @zendshost*`;
+          const text = `📥 <b>New Bot Detected: ${escapeTelegramRuntimeHtml(botName)}</b>\n\n<b>Amount:</b> ${escapeTelegramRuntimeHtml(amount || "0")} PI\n<b>Memo:</b> ${escapeTelegramRuntimeHtml(memo || "-")}\n<b>Developer:</b> @zendshost`;
 
           await fetch(`https://api.telegram.org/bot${telegram.botToken}/sendMessage`, {
                method: "POST",
                headers: { "Content-Type": "application/json" },
-               body: JSON.stringify({ chat_id: telegram.chatId, text: text, parse_mode: "Markdown" }),
+               body: JSON.stringify({ chat_id: telegram.chatId, text: text, parse_mode: "HTML" }),
           });
      } catch (error) {
           console.error(`Telegram Error: ${error.message}`);
