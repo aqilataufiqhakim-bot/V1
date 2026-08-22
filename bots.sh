@@ -12776,7 +12776,8 @@ const HORIZON_REQUEST_DELAY_MS = parsePositiveIntEnv("HORIZON_REQUEST_DELAY_MS",
 const HORIZON_RATE_LIMIT_COOLDOWN_MS = parsePositiveIntEnv("HORIZON_RATE_LIMIT_COOLDOWN_MS", 20000, 1000, 600000);
 const HORIZON_RATE_LIMIT_JITTER_MS = parsePositiveIntEnv("HORIZON_RATE_LIMIT_JITTER_MS", 500, 0, 60000);
 const EXACT_LEDGER_MODE = String(process.env.EXACT_LEDGER_MODE || "true").trim().toLowerCase() === "true";
-const EXACT_LEDGER_MONITOR_BEFORE_MS = parsePositiveIntEnv("EXACT_LEDGER_MONITOR_BEFORE_MS", 15000, 1000, 300000);
+const USE_LEDGER_BOUNDS = String(process.env.USE_LEDGER_BOUNDS || "false").trim().toLowerCase() === "true";
+const EXACT_LEDGER_MONITOR_BEFORE_MS = parsePositiveIntEnv("EXACT_LEDGER_MONITOR_BEFORE_MS", 60000, 1000, 300000);
 const EXACT_LEDGER_CLOSE_AVG_MS = parsePositiveIntEnv("EXACT_LEDGER_CLOSE_AVG_MS", 5000, 1000, 30000);
 const EXACT_LEDGER_MAX_OFFSET = parsePositiveIntEnv("EXACT_LEDGER_MAX_OFFSET", 1, 0, 10);
 
@@ -12941,6 +12942,9 @@ function stripTransactionPreconditions(tx) {
 
 function applyTransactionBounds(txBuilder, minTime, maxTime, ledgerBounds = null, botName = WORKER_NAME) {
      txBuilder.setTimebounds(minTime, maxTime);
+     if (!USE_LEDGER_BOUNDS) {
+          return txBuilder;
+     }
      if (!ledgerBounds) {
           return txBuilder;
      }
@@ -15198,7 +15202,7 @@ async function executeBot(config) {
                     `[${botName}] Timebounds WIN: minTime=${minTime}, maxTime=${maxTime} (valid sampai call submit + ${TRANSACTION_TIMEOUT_MS}ms).`,
                     "info"
                );
-               if (EXACT_LEDGER_MODE && !exactLedgerBounds) {
+               if (EXACT_LEDGER_MODE && USE_LEDGER_BOUNDS && !exactLedgerBounds) {
                     exactLedgerBounds = await resolveExactLedgerBounds(
                          finalOnlineServers.length > 0 ? finalOnlineServers : horizonCandidates,
                          unlockTimeMs,
@@ -16404,7 +16408,7 @@ async function checkWebServiceConnectivity() {
                "info"
           );
           workerLog(
-               `🎯 Exact Ledger Mode: ${EXACT_LEDGER_MODE ? `ON monitor=${EXACT_LEDGER_MONITOR_BEFORE_MS}ms avg=${EXACT_LEDGER_CLOSE_AVG_MS}ms maxOffset=${EXACT_LEDGER_MAX_OFFSET}` : "OFF"}`,
+               `🎯 Exact Ledger Mode: ${EXACT_LEDGER_MODE ? `ON monitor=${EXACT_LEDGER_MONITOR_BEFORE_MS}ms ledgerBounds=${USE_LEDGER_BOUNDS ? `ON avg=${EXACT_LEDGER_CLOSE_AVG_MS}ms maxOffset=${EXACT_LEDGER_MAX_OFFSET}` : "OFF"}` : "OFF"}`,
                EXACT_LEDGER_MODE ? "success" : "info"
           );
           const telegramSettings = redisReady ? await getTelegramSettings() : { botToken: "", chatId: "" };
@@ -16542,6 +16546,11 @@ const workerRateLimitEnv = {
   HORIZON_REQUEST_DELAY_MS: boundedIntEnv('HORIZON_REQUEST_DELAY_MS', 150, 0, 5000),
   HORIZON_RATE_LIMIT_COOLDOWN_MS: 20000,
   HORIZON_RATE_LIMIT_JITTER_MS: 500,
+  EXACT_LEDGER_MODE: process.env.EXACT_LEDGER_MODE || 'true',
+  USE_LEDGER_BOUNDS: process.env.USE_LEDGER_BOUNDS || 'false',
+  EXACT_LEDGER_MONITOR_BEFORE_MS: boundedIntEnv('EXACT_LEDGER_MONITOR_BEFORE_MS', 60000, 1000, 300000),
+  EXACT_LEDGER_CLOSE_AVG_MS: boundedIntEnv('EXACT_LEDGER_CLOSE_AVG_MS', 5000, 1000, 30000),
+  EXACT_LEDGER_MAX_OFFSET: boundedIntEnv('EXACT_LEDGER_MAX_OFFSET', 1, 0, 10),
   WORKER_SERVER_ONLY: process.env.WORKER_SERVER_ONLY || 'true',
   MAX_SUBMIT_HORIZONS: unlimitedHorizonEnv('MAX_SUBMIT_HORIZONS', '1'),
   HELPER_LOAD_CONCURRENCY: 5,
@@ -16780,7 +16789,8 @@ HORIZON_REQUEST_DELAY_MS=150
 HORIZON_RATE_LIMIT_COOLDOWN_MS=20000
 HORIZON_RATE_LIMIT_JITTER_MS=500
 EXACT_LEDGER_MODE=true
-EXACT_LEDGER_MONITOR_BEFORE_MS=15000
+USE_LEDGER_BOUNDS=false
+EXACT_LEDGER_MONITOR_BEFORE_MS=60000
 EXACT_LEDGER_CLOSE_AVG_MS=5000
 EXACT_LEDGER_MAX_OFFSET=1
 # 1 = satu server Horizon untuk 100 TX per worker. 0 = unlimited.
