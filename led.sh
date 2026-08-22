@@ -1016,7 +1016,7 @@ function withMultisigActionTimeout(promise, label = "Multisig action", timeoutMs
 async function waitMultisigBatchDelay(batchIndex, totalBatches, batchDelayMs, label = "multisig") {
     if (batchDelayMs > 0 && batchIndex < totalBatches - 1) {
         broadcastLog(
-            `[${label}] ⏳ Delay antar batch ${Math.round(batchDelayMs / 1000)} detik untuk mengurangi rate limit.`,
+            `[${label}] â³ Delay antar batch ${Math.round(batchDelayMs / 1000)} detik untuk mengurangi rate limit.`,
             "info"
         );
         await sleepMultisig(batchDelayMs);
@@ -1028,13 +1028,13 @@ async function waitMultisigBatchDelayWithStop(batchIndex, totalBatches, batchDel
         return Boolean(typeof shouldStop === "function" && shouldStop());
     }
     broadcastLog(
-        `[${label}] ⏳ Delay antar batch ${Math.round(batchDelayMs / 1000)} detik untuk mengurangi rate limit.`,
+        `[${label}] â³ Delay antar batch ${Math.round(batchDelayMs / 1000)} detik untuk mengurangi rate limit.`,
         "info"
     );
     const startedAt = Date.now();
     while (Date.now() - startedAt < batchDelayMs) {
         if (typeof shouldStop === "function" && shouldStop()) {
-            broadcastLog(`[${label}] 🛑 Stop diminta saat delay. Batch berikutnya dibatalkan.`, "warning");
+            broadcastLog(`[${label}] ðŸ›‘ Stop diminta saat delay. Batch berikutnya dibatalkan.`, "warning");
             return true;
         }
         const remaining = batchDelayMs - (Date.now() - startedAt);
@@ -1154,7 +1154,7 @@ async function notifyMultisigProtocolReadyTelegram(pending, protocolInfo) {
     const current = protocolInfo.current_protocol_version ?? "unknown";
     const required = protocolInfo.required_protocol_version || pending.required_protocol_version || MULTISIG_REQUIRED_PROTOCOL_VERSION;
     const text = [
-        "🚀 Protocol Pi Network sudah update",
+        "ðŸš€ Protocol Pi Network sudah update",
         `Network: ${network}`,
         `Protocol: ${current} / required ${required}`,
         `Horizon: ${protocolInfo.horizon_url || pending.horizon_url || "-"}`,
@@ -2115,7 +2115,7 @@ async function stopMultisigSignerWatch(chatId = "", reason = "Dihentikan oleh ad
 function signerWatchStopKeyboard(lang = {}) {
     return {
         inline_keyboard: [
-            [{ text: lang.stopBatchInstallLock || "⛔ Stop Batch Install Lock", callback_data: "multi:watch:stop" }],
+            [{ text: lang.stopBatchInstallLock || "â›” Stop Batch Install Lock", callback_data: "multi:watch:stop" }],
         ],
     };
 }
@@ -2123,7 +2123,7 @@ function signerWatchStopKeyboard(lang = {}) {
 function renderSignerWatchStatusText(state = {}, lang = {}) {
     const status = state.status || "idle";
     const lines = [
-        `<b>${escapeTelegramHtml(lang.signerWatchTitle || "🔁 Watch Signer Mainnet")}</b>`,
+        `<b>${escapeTelegramHtml(lang.signerWatchTitle || "ðŸ” Watch Signer Mainnet")}</b>`,
         `${escapeTelegramHtml(lang.status || "Status")}: <b>${escapeTelegramHtml(formatTelegramStatus(status))}</b>`,
         `Test Wallet: <code>${escapeTelegramHtml(shortKey(state.test_public_key, 8))}</code>`,
         `Interval: <b>${Math.round(Number(state.interval_ms || MULTISIG_SIGNER_WATCH_INTERVAL_MS) / 1000)}s</b>`,
@@ -2177,14 +2177,14 @@ function formatTelegramDurationShort(ms) {
 function buildTelegramProgressBar(ratio, width = 10) {
     const clamped = Math.max(0, Math.min(1, Number(ratio || 0)));
     const filled = Math.round(clamped * width);
-    return `${"█".repeat(filled)}${"░".repeat(Math.max(0, width - filled))}`;
+    return `${"â–ˆ".repeat(filled)}${"â–‘".repeat(Math.max(0, width - filled))}`;
 }
 
 function renderTelegramLoadingText(options = {}) {
     const lang = options.lang || {};
-    const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    const frames = ["â ‹", "â ™", "â ¹", "â ¸", "â ¼", "â ´", "â ¦", "â §", "â ‡", "â "];
     const frame = frames[Number(options.frameIndex || 0) % frames.length];
-    const title = String(options.title || "⏳ Processing...");
+    const title = String(options.title || "â³ Processing...");
     const subtitle = String(options.subtitle || lang.loadingKeepOpen || "Please wait...");
     const startedAt = Number(options.startedAt || Date.now());
     const elapsedMs = Math.max(0, Date.now() - startedAt);
@@ -2200,7 +2200,7 @@ function renderTelegramLoadingText(options = {}) {
         : (lang.loadingUnknown || "calculating...");
     const lines = [
         `<b>${escapeTelegramHtml(title)}</b>`,
-        `<code>${escapeTelegramHtml(frame)} ${progressRatio === null ? "──────────" : buildTelegramProgressBar(progressRatio, 10)}</code>${progressRatio === null ? "" : ` <b>${Math.round(progressRatio * 100)}%</b>`}`,
+        `<code>${escapeTelegramHtml(frame)} ${progressRatio === null ? "â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€" : buildTelegramProgressBar(progressRatio, 10)}</code>${progressRatio === null ? "" : ` <b>${Math.round(progressRatio * 100)}%</b>`}`,
         `${escapeTelegramHtml(lang.loadingElapsed || "Elapsed")}: <b>${escapeTelegramHtml(formatTelegramDurationShort(elapsedMs))}</b>`,
         `${escapeTelegramHtml(lang.loadingEta || "Estimated remaining")}: <b>${escapeTelegramHtml(etaText)}</b>`,
     ];
@@ -2381,7 +2381,7 @@ async function runMultisigSignerWatchAutoInstall(state) {
             await getMultisigSignerWatchState(),
             tgLang,
             {
-                text: tgLang.signerWatchSignerReadyAutoRun || "✅ Signer mainnet sudah aktif. Bot menjalankan Install Lock otomatis dari Saved Wallet List.",
+                text: tgLang.signerWatchSignerReadyAutoRun || "âœ… Signer mainnet sudah aktif. Bot menjalankan Install Lock otomatis dari Saved Wallet List.",
                 keyboard: telegramMultisigRunKeyboard(runControl.id, tgLang),
             }
         );
@@ -2411,7 +2411,7 @@ async function runMultisigSignerWatchAutoInstall(state) {
         const safeError = normalizeMultisigErrorForTelegram(err);
         const errorState = await saveMultisigSignerWatchState({ status: "error", active_run_id: null, last_error: safeError });
         await updateSignerWatchStatusMessage(chatId, errorState, tgLang, {
-            text: `❌ ${escapeTelegramHtml(safeError)}`,
+            text: `âŒ ${escapeTelegramHtml(safeError)}`,
             keyboard: telegramBackKeyboard("menu:multisig"),
         });
         return null;
@@ -2524,7 +2524,7 @@ async function startMultisigSignerWatchFromWizard(chatId, callbackQuery = null, 
     } catch (err) {
         const safeError = normalizeMultisigErrorForTelegram(err);
         await saveMultisigSignerWatchState({ status: "error", last_error: safeError, active_run_id: null, stopped_at: utcIso() });
-        return telegramEditOrSend(callbackQuery, `❌ ${escapeTelegramHtml(safeError)}`, telegramBackKeyboard("menu:multisig"));
+        return telegramEditOrSend(callbackQuery, `âŒ ${escapeTelegramHtml(safeError)}`, telegramBackKeyboard("menu:multisig"));
     }
     if (!savedPhrases.length) {
         return telegramEditOrSend(callbackQuery, tgLang.savedWalletRunEmpty || "Saved Wallet List kosong", telegramBackKeyboard("menu:multisig"));
@@ -2601,13 +2601,13 @@ async function handleMultisigSignerWatchTestPhraseInput(message, pending = {}) {
         const saved = await saveMultisigSignerWatchTestPhrase(input.text);
         await telegramDeleteUserMessage(message);
         telegramControlState.pendingInputs.delete(String(chatId));
-        await telegramSend(chatId, `${tgLang.signerWatchTestPhraseSaved || "✅ Test phrase signer disimpan"}\nTest Wallet: <code>${escapeTelegramHtml(shortKey(saved.public_key, 8))}</code>`, telegramBackKeyboard("menu:multisig"));
+        await telegramSend(chatId, `${tgLang.signerWatchTestPhraseSaved || "âœ… Test phrase signer disimpan"}\nTest Wallet: <code>${escapeTelegramHtml(shortKey(saved.public_key, 8))}</code>`, telegramBackKeyboard("menu:multisig"));
         if (pending.data?.start_after_save) {
             return startMultisigSignerWatchWizard(chatId);
         }
         return renderTelegramMultisig(chatId);
     } catch (err) {
-        return telegramSend(chatId, `❌ ${escapeTelegramHtml(err.message || err)}`, telegramBackKeyboard("menu:multisig"));
+        return telegramSend(chatId, `âŒ ${escapeTelegramHtml(err.message || err)}`, telegramBackKeyboard("menu:multisig"));
     }
 }
 
@@ -4079,10 +4079,10 @@ async function restartPm2WorkersAfterBumpChange(reason = "bump.txt updated") {
         if (PM2_AUTO_SAVE) {
             await runPm2Command(["save"], { timeout: 30000 }).catch(() => null);
         }
-        broadcastLog(`🔁 ${restarted}/${targets.length} Worker PM2 direstart karena ${reason}; bump.txt dimuat ulang.`, "success");
+        broadcastLog(`ðŸ” ${restarted}/${targets.length} Worker PM2 direstart karena ${reason}; bump.txt dimuat ulang.`, "success");
         return true;
     } catch (err) {
-        broadcastLog(`⚠️ Gagal restart worker PM2 setelah update bump.txt: ${err.message}`, "warning");
+        broadcastLog(`âš ï¸ Gagal restart worker PM2 setelah update bump.txt: ${err.message}`, "warning");
         return false;
     }
 }
@@ -4314,71 +4314,71 @@ async function saveTimezoneSettings(input) {
 }
 
 const TELEGRAM_LANGUAGE_OPTIONS = [
-    { code: "id", label: "🇮🇩 Indonesia" },
-    { code: "en", label: "🇬🇧 English" },
-    { code: "ms", label: "🇲🇾 Melayu" },
+    { code: "id", label: "ðŸ‡®ðŸ‡© Indonesia" },
+    { code: "en", label: "ðŸ‡¬ðŸ‡§ English" },
+    { code: "ms", label: "ðŸ‡²ðŸ‡¾ Melayu" },
 ];
 
 const TELEGRAM_LANGUAGE_TEXT = {
     id: {
-        settings: "⚙️ Settings",
-        timezone: "🌍 Time Zone",
-        server: "🖥️ Server",
-        worker: "👷 Worker",
-        funding: "💰 Funding",
-        destination: "🎯 Wallet Tujuan",
-        botTx: "🤖 Bot TX",
-        multisig: "🔐 Multisig",
-        checkLedger: "🔎 Check Ledger",
-        fundingHistory: "📊 Riwayat Funding",
-        liveLogs: "📜 Live Logs",
-        language: "🌐 Bahasa",
-        refresh: "🔄 Refresh",
-        back: "⬅️ Kembali",
-        mainMenu: "⬅️ Menu Utama",
-        homeTitle: "🤖 PILEAKERS V22🤖",
+        settings: "âš™ï¸ Settings",
+        timezone: "ðŸŒ Time Zone",
+        server: "ðŸ–¥ï¸ Server",
+        worker: "ðŸ‘· Worker",
+        funding: "ðŸ’° Funding",
+        destination: "ðŸŽ¯ Wallet Tujuan",
+        botTx: "ðŸ¤– Bot TX",
+        multisig: "ðŸ” Multisig",
+        checkLedger: "ðŸ”Ž Check Ledger",
+        fundingHistory: "ðŸ“Š Riwayat Funding",
+        liveLogs: "ðŸ“œ Live Logs",
+        language: "ðŸŒ Bahasa",
+        refresh: "ðŸ”„ Refresh",
+        back: "â¬…ï¸ Kembali",
+        mainMenu: "â¬…ï¸ Menu Utama",
+        homeTitle: "ðŸ¤– PILEAKERS V22ðŸ¤–",
         homeIntro: "Kontrol dashboard lewat Telegram.",
-        languageTitle: "🌐 Pilih Bahasa",
+        languageTitle: "ðŸŒ Pilih Bahasa",
         languageNow: "Bahasa sekarang",
         languagePrompt: "Pilih bahasa tampilan tombol dan pesan utama bot.",
-        languageSaved: "✅ Bahasa disimpan",
-        languageChanged: "✅ Bahasa berhasil diubah ke Indonesia! 🇮🇩",
+        languageSaved: "âœ… Bahasa disimpan",
+        languageChanged: "âœ… Bahasa berhasil diubah ke Indonesia! ðŸ‡®ðŸ‡©",
         notSet: "belum diset",
         now: "Sekarang",
         currentLanguage: "Bahasa",
         fundingWalletLabel: "Funding Wallet",
         destinationWalletLabel: "Wallet Tujuan",
-        chooseLanguageButton: "🌐 Pilih Bahasa",
-        setTelegramButton: "🔑 Set Telegram Token/Chat",
-        setSubmitBeforeButton: "⏱️ Set Submit Before MS",
-        settingsTitle: "⚙️ Settings",
-        timezoneTitle: "🌍 Pengaturan Time Zone",
+        chooseLanguageButton: "ðŸŒ Pilih Bahasa",
+        setTelegramButton: "ðŸ”‘ Set Telegram Token/Chat",
+        setSubmitBeforeButton: "â±ï¸ Set Submit Before MS",
+        settingsTitle: "âš™ï¸ Settings",
+        timezoneTitle: "ðŸŒ Pengaturan Time Zone",
         timezonePrompt: "Pilih timezone untuk default bot yang dibuat dari Telegram.",
-        manageServers: "🖥️ Manage Servers",
+        manageServers: "ðŸ–¥ï¸ Manage Servers",
         noServers: "Belum ada server.",
-        addServer: "➕ Add Server",
-        deleteServer: "🗑️ Delete Server",
-        manageFunding: "💰 Funding Wallet",
+        addServer: "âž• Add Server",
+        deleteServer: "ðŸ—‘ï¸ Delete Server",
+        manageFunding: "ðŸ’° Funding Wallet",
         noFundingWallet: "Belum ada funding wallet.",
-        addFunding: "➕ Add Funding",
-        addFundingFirst: "➕ Add Funding dulu",
-        deleteFunding: "🗑️ Delete Funding",
+        addFunding: "âž• Add Funding",
+        addFundingFirst: "âž• Add Funding dulu",
+        deleteFunding: "ðŸ—‘ï¸ Delete Funding",
         publicKey: "Public",
         balance: "Saldo",
         id: "ID",
-        manageDestinations: "🎯 Wallet Tujuan",
+        manageDestinations: "ðŸŽ¯ Wallet Tujuan",
         noDestinations: "Belum ada wallet tujuan.",
-        addDestination: "➕ Add Wallet Tujuan",
-        deleteDestination: "🗑️ Delete Wallet Tujuan",
-        manageWorkers: "👷 Manage Workers",
+        addDestination: "âž• Add Wallet Tujuan",
+        deleteDestination: "ðŸ—‘ï¸ Delete Wallet Tujuan",
+        manageWorkers: "ðŸ‘· Manage Workers",
         noWorkers: "Belum ada worker.",
         unassigned: "Belum dipilih",
-        addWorker: "➕ Add Worker",
-        deleteWorker: "🗑️ Delete Worker",
+        addWorker: "âž• Add Worker",
+        deleteWorker: "ðŸ—‘ï¸ Delete Worker",
         noBots: "Belum ada bot TX.",
-        setNewBot: "➕ Set New Bot",
-        advancedJson: "🧩 Advanced JSON",
-        deleteBot: "🗑️ Delete Bot",
+        setNewBot: "âž• Set New Bot",
+        advancedJson: "ðŸ§© Advanced JSON",
+        deleteBot: "ðŸ—‘ï¸ Delete Bot",
         moreBots: "bot lain",
         parent: "Parent",
         status: "Status",
@@ -4388,110 +4388,110 @@ const TELEGRAM_LANGUAGE_TEXT = {
         network: "Network",
         time: "Waktu",
         feeLoss: "Fee Loss",
-        fundingHistoryTitle: "📊 Riwayat Mutasi Funding",
+        fundingHistoryTitle: "ðŸ“Š Riwayat Mutasi Funding",
         totalMutations: "Total mutasi",
         totalLoss: "Total loss",
         noHistory: "Belum ada riwayat.",
         botGroup: "Bot/Group",
         workersLabel: "Workers",
         deducted: "Terpotong",
-        ledgerTitle: "🔎 Check Ledger",
+        ledgerTitle: "ðŸ”Ž Check Ledger",
         ledgerIntro: "Fungsi ini sama seperti menu Check Ledger di web.",
         ledgerAutoInfo: "Auto Detect = bot ambil 10 ledger terakhir dari transaksi wallet.",
         ledgerManualInfo: "Manual Range = admin isi ledger start dan ledger end sendiri.",
-        autoDetectLedger: "🔎 Auto Detect Ledger",
-        manualLedgerRange: "✍️ Manual Ledger Range",
-        logsTitle: "📜 Live Logs",
+        autoDetectLedger: "ðŸ”Ž Auto Detect Ledger",
+        manualLedgerRange: "âœï¸ Manual Ledger Range",
+        logsTitle: "ðŸ“œ Live Logs",
         logsIntro: "Menampilkan 40 log terakhir dari proses bot/worker.",
         noLogs: "Belum ada log.",
-        refreshLogs: "🔄 Refresh Logs",
-        multisigTitle: "🔐 Multisig Full Control",
+        refreshLogs: "ðŸ”„ Refresh Logs",
+        multisigTitle: "ðŸ” Multisig Full Control",
         lockedWallet: "Locked wallet",
         pendingLock: "Pending lock",
         savedWalletList: "Saved Wallet List",
         savedWalletPhraseList: "Saved Wallet Phrase List",
-        saveWalletList: "💾 Save Wallet List",
-        runSavedBatch: "🚀 Run Saved Batch",
-        manageSavedWallets: "📦 List Wallet Tersimpan",
-        deleteAllSavedWallets: "🗑️ Hapus All Wallet",
-        addSavedWallet: "➕ Save Wallet",
+        saveWalletList: "ðŸ’¾ Save Wallet List",
+        runSavedBatch: "ðŸš€ Run Saved Batch",
+        manageSavedWallets: "ðŸ“¦ List Wallet Tersimpan",
+        deleteAllSavedWallets: "ðŸ—‘ï¸ Hapus All Wallet",
+        addSavedWallet: "âž• Save Wallet",
         noSavedWallet: "Belum ada wallet tersimpan.",
         savedWalletIntro: "Phrase disimpan terenkripsi dan tidak akan terhapus setelah Run Batch.",
         deleteOneByOne: "Hapus satu per satu",
         defaultTimezone: "Default timezone",
         multisigIntro: "Semua operasi dijalankan dari Telegram berdasarkan Chat ID admin.",
-        runSetMode: "➕ Run / Set Mode",
-        withdrawAllAssets: "💸 Tarik Semua Aset",
-        sweepAll: "🧹 Sweep All",
-        removeAllSigner: "🧹 Hapus All Signer",
-        locked: "📋 Locked",
-        pending: "⏳ Pending",
-        protocolMainnet: "🧭 Protocol Mainnet",
-        protocolTestnet: "🧪 Protocol Testnet",
+        runSetMode: "âž• Run / Set Mode",
+        withdrawAllAssets: "ðŸ’¸ Tarik Semua Aset",
+        sweepAll: "ðŸ§¹ Sweep All",
+        removeAllSigner: "ðŸ§¹ Hapus All Signer",
+        locked: "ðŸ“‹ Locked",
+        pending: "â³ Pending",
+        protocolMainnet: "ðŸ§­ Protocol Mainnet",
+        protocolTestnet: "ðŸ§ª Protocol Testnet",
         openingHome: "Membuka menu utama...",
         chatNotAllowed: "Chat tidak diizinkan",
         typeMenuHint: "Ketik /menu untuk membuka tombol kontrol.",
         inputCancelled: "Input dibatalkan.",
     },
     en: {
-        settings: "⚙️ Settings",
-        timezone: "🌍 Time Zone",
-        server: "🖥️ Server",
-        worker: "👷 Worker",
-        funding: "💰 Funding",
-        destination: "🎯 Destination Wallet",
-        botTx: "🤖 TX Bot",
-        multisig: "🔐 Multisig",
-        checkLedger: "🔎 Check Ledger",
-        fundingHistory: "📊 Funding History",
-        liveLogs: "📜 Live Logs",
-        language: "🌐 Language",
-        refresh: "🔄 Refresh",
-        back: "⬅️ Back",
-        mainMenu: "⬅️ Main Menu",
-        homeTitle: "🤖 PILEAKERS V22🤖",
+        settings: "âš™ï¸ Settings",
+        timezone: "ðŸŒ Time Zone",
+        server: "ðŸ–¥ï¸ Server",
+        worker: "ðŸ‘· Worker",
+        funding: "ðŸ’° Funding",
+        destination: "ðŸŽ¯ Destination Wallet",
+        botTx: "ðŸ¤– TX Bot",
+        multisig: "ðŸ” Multisig",
+        checkLedger: "ðŸ”Ž Check Ledger",
+        fundingHistory: "ðŸ“Š Funding History",
+        liveLogs: "ðŸ“œ Live Logs",
+        language: "ðŸŒ Language",
+        refresh: "ðŸ”„ Refresh",
+        back: "â¬…ï¸ Back",
+        mainMenu: "â¬…ï¸ Main Menu",
+        homeTitle: "ðŸ¤– PILEAKERS V22ðŸ¤–",
         homeIntro: "Control the dashboard from Telegram.",
-        languageTitle: "🌐 Choose Language",
+        languageTitle: "ðŸŒ Choose Language",
         languageNow: "Current language",
         languagePrompt: "Choose the language for main bot buttons and messages.",
-        languageSaved: "✅ Language saved",
-        languageChanged: "✅ Language changed to English! 🇬🇧",
+        languageSaved: "âœ… Language saved",
+        languageChanged: "âœ… Language changed to English! ðŸ‡¬ðŸ‡§",
         notSet: "not set",
         now: "Current",
         currentLanguage: "Language",
         fundingWalletLabel: "Funding Wallet",
         destinationWalletLabel: "Destination Wallet",
-        chooseLanguageButton: "🌐 Choose Language",
-        setTelegramButton: "🔑 Set Telegram Token/Chat",
-        setSubmitBeforeButton: "⏱️ Set Submit Before MS",
-        settingsTitle: "⚙️ Settings",
-        timezoneTitle: "🌍 Time Zone Settings",
+        chooseLanguageButton: "ðŸŒ Choose Language",
+        setTelegramButton: "ðŸ”‘ Set Telegram Token/Chat",
+        setSubmitBeforeButton: "â±ï¸ Set Submit Before MS",
+        settingsTitle: "âš™ï¸ Settings",
+        timezoneTitle: "ðŸŒ Time Zone Settings",
         timezonePrompt: "Choose the default timezone for bots created from Telegram.",
-        manageServers: "🖥️ Manage Servers",
+        manageServers: "ðŸ–¥ï¸ Manage Servers",
         noServers: "No servers yet.",
-        addServer: "➕ Add Server",
-        deleteServer: "🗑️ Delete Server",
-        manageFunding: "💰 Funding Wallet",
+        addServer: "âž• Add Server",
+        deleteServer: "ðŸ—‘ï¸ Delete Server",
+        manageFunding: "ðŸ’° Funding Wallet",
         noFundingWallet: "No funding wallet yet.",
-        addFunding: "➕ Add Funding",
-        addFundingFirst: "➕ Add Funding first",
-        deleteFunding: "🗑️ Delete Funding",
+        addFunding: "âž• Add Funding",
+        addFundingFirst: "âž• Add Funding first",
+        deleteFunding: "ðŸ—‘ï¸ Delete Funding",
         publicKey: "Public",
         balance: "Balance",
         id: "ID",
-        manageDestinations: "🎯 Destination Wallets",
+        manageDestinations: "ðŸŽ¯ Destination Wallets",
         noDestinations: "No destination wallets yet.",
-        addDestination: "➕ Add Destination Wallet",
-        deleteDestination: "🗑️ Delete Destination Wallet",
-        manageWorkers: "👷 Manage Workers",
+        addDestination: "âž• Add Destination Wallet",
+        deleteDestination: "ðŸ—‘ï¸ Delete Destination Wallet",
+        manageWorkers: "ðŸ‘· Manage Workers",
         noWorkers: "No workers yet.",
         unassigned: "Unassigned",
-        addWorker: "➕ Add Worker",
-        deleteWorker: "🗑️ Delete Worker",
+        addWorker: "âž• Add Worker",
+        deleteWorker: "ðŸ—‘ï¸ Delete Worker",
         noBots: "No TX bots yet.",
-        setNewBot: "➕ Set New Bot",
-        advancedJson: "🧩 Advanced JSON",
-        deleteBot: "🗑️ Delete Bot",
+        setNewBot: "âž• Set New Bot",
+        advancedJson: "ðŸ§© Advanced JSON",
+        deleteBot: "ðŸ—‘ï¸ Delete Bot",
         moreBots: "more bots",
         parent: "Parent",
         status: "Status",
@@ -4501,110 +4501,110 @@ const TELEGRAM_LANGUAGE_TEXT = {
         network: "Network",
         time: "Time",
         feeLoss: "Fee Loss",
-        fundingHistoryTitle: "📊 Funding Mutation History",
+        fundingHistoryTitle: "ðŸ“Š Funding Mutation History",
         totalMutations: "Total mutations",
         totalLoss: "Total loss",
         noHistory: "No history yet.",
         botGroup: "Bot/Group",
         workersLabel: "Workers",
         deducted: "Deducted",
-        ledgerTitle: "🔎 Check Ledger",
+        ledgerTitle: "ðŸ”Ž Check Ledger",
         ledgerIntro: "This works like the Check Ledger menu on the web dashboard.",
         ledgerAutoInfo: "Auto Detect = the bot reads the last 10 ledgers from the wallet transactions.",
         ledgerManualInfo: "Manual Range = admin enters start ledger and end ledger manually.",
-        autoDetectLedger: "🔎 Auto Detect Ledger",
-        manualLedgerRange: "✍️ Manual Ledger Range",
-        logsTitle: "📜 Live Logs",
+        autoDetectLedger: "ðŸ”Ž Auto Detect Ledger",
+        manualLedgerRange: "âœï¸ Manual Ledger Range",
+        logsTitle: "ðŸ“œ Live Logs",
         logsIntro: "Showing the latest 40 logs from bot/worker processes.",
         noLogs: "No logs yet.",
-        refreshLogs: "🔄 Refresh Logs",
-        multisigTitle: "🔐 Multisig Full Control",
+        refreshLogs: "ðŸ”„ Refresh Logs",
+        multisigTitle: "ðŸ” Multisig Full Control",
         lockedWallet: "Locked wallet",
         pendingLock: "Pending lock",
         savedWalletList: "Saved Wallet List",
         savedWalletPhraseList: "Saved Wallet Phrase List",
-        saveWalletList: "💾 Save Wallet List",
-        runSavedBatch: "🚀 Run Saved Batch",
-        manageSavedWallets: "📦 Saved Wallet List",
-        deleteAllSavedWallets: "🗑️ Delete All Wallets",
-        addSavedWallet: "➕ Save Wallet",
+        saveWalletList: "ðŸ’¾ Save Wallet List",
+        runSavedBatch: "ðŸš€ Run Saved Batch",
+        manageSavedWallets: "ðŸ“¦ Saved Wallet List",
+        deleteAllSavedWallets: "ðŸ—‘ï¸ Delete All Wallets",
+        addSavedWallet: "âž• Save Wallet",
         noSavedWallet: "No saved wallets yet.",
         savedWalletIntro: "Phrases are stored encrypted and will not be deleted after Run Batch.",
         deleteOneByOne: "Delete one by one",
         defaultTimezone: "Default timezone",
         multisigIntro: "All operations run from Telegram based on the admin Chat ID.",
-        runSetMode: "➕ Run / Set Mode",
-        withdrawAllAssets: "💸 Withdraw All Assets",
-        sweepAll: "🧹 Sweep All",
-        removeAllSigner: "🧹 Remove All Signers",
-        locked: "📋 Locked",
-        pending: "⏳ Pending",
-        protocolMainnet: "🧭 Mainnet Protocol",
-        protocolTestnet: "🧪 Testnet Protocol",
+        runSetMode: "âž• Run / Set Mode",
+        withdrawAllAssets: "ðŸ’¸ Withdraw All Assets",
+        sweepAll: "ðŸ§¹ Sweep All",
+        removeAllSigner: "ðŸ§¹ Remove All Signers",
+        locked: "ðŸ“‹ Locked",
+        pending: "â³ Pending",
+        protocolMainnet: "ðŸ§­ Mainnet Protocol",
+        protocolTestnet: "ðŸ§ª Testnet Protocol",
         openingHome: "Opening main menu...",
         chatNotAllowed: "Chat is not allowed",
         typeMenuHint: "Type /menu to open the control buttons.",
         inputCancelled: "Input cancelled.",
     },
     ms: {
-        settings: "⚙️ Tetapan",
-        timezone: "🌍 Zon Masa",
-        server: "🖥️ Server",
-        worker: "👷 Worker",
-        funding: "💰 Funding",
-        destination: "🎯 Wallet Tujuan",
-        botTx: "🤖 Bot TX",
-        multisig: "🔐 Multisig",
-        checkLedger: "🔎 Semak Ledger",
-        fundingHistory: "📊 Sejarah Funding",
-        liveLogs: "📜 Live Logs",
-        language: "🌐 Bahasa",
-        refresh: "🔄 Refresh",
-        back: "⬅️ Kembali",
-        mainMenu: "⬅️ Menu Utama",
-        homeTitle: "🤖 PILEAKERS V22🤖",
+        settings: "âš™ï¸ Tetapan",
+        timezone: "ðŸŒ Zon Masa",
+        server: "ðŸ–¥ï¸ Server",
+        worker: "ðŸ‘· Worker",
+        funding: "ðŸ’° Funding",
+        destination: "ðŸŽ¯ Wallet Tujuan",
+        botTx: "ðŸ¤– Bot TX",
+        multisig: "ðŸ” Multisig",
+        checkLedger: "ðŸ”Ž Semak Ledger",
+        fundingHistory: "ðŸ“Š Sejarah Funding",
+        liveLogs: "ðŸ“œ Live Logs",
+        language: "ðŸŒ Bahasa",
+        refresh: "ðŸ”„ Refresh",
+        back: "â¬…ï¸ Kembali",
+        mainMenu: "â¬…ï¸ Menu Utama",
+        homeTitle: "ðŸ¤– PILEAKERS V22ðŸ¤–",
         homeIntro: "Kawal dashboard melalui Telegram.",
-        languageTitle: "🌐 Pilih Bahasa",
+        languageTitle: "ðŸŒ Pilih Bahasa",
         languageNow: "Bahasa semasa",
         languagePrompt: "Pilih bahasa untuk butang utama dan mesej bot.",
-        languageSaved: "✅ Bahasa disimpan",
-        languageChanged: "✅ Bahasa berjaya ditukar ke Melayu! 🇲🇾",
+        languageSaved: "âœ… Bahasa disimpan",
+        languageChanged: "âœ… Bahasa berjaya ditukar ke Melayu! ðŸ‡²ðŸ‡¾",
         notSet: "belum ditetapkan",
         now: "Sekarang",
         currentLanguage: "Bahasa",
         fundingWalletLabel: "Wallet Funding",
         destinationWalletLabel: "Wallet Tujuan",
-        chooseLanguageButton: "🌐 Pilih Bahasa",
-        setTelegramButton: "🔑 Tetapkan Telegram Token/Chat",
-        setSubmitBeforeButton: "⏱️ Tetapkan Submit Before MS",
-        settingsTitle: "⚙️ Tetapan",
-        timezoneTitle: "🌍 Tetapan Zon Masa",
+        chooseLanguageButton: "ðŸŒ Pilih Bahasa",
+        setTelegramButton: "ðŸ”‘ Tetapkan Telegram Token/Chat",
+        setSubmitBeforeButton: "â±ï¸ Tetapkan Submit Before MS",
+        settingsTitle: "âš™ï¸ Tetapan",
+        timezoneTitle: "ðŸŒ Tetapan Zon Masa",
         timezonePrompt: "Pilih zon masa lalai untuk bot yang dibuat daripada Telegram.",
-        manageServers: "🖥️ Urus Server",
+        manageServers: "ðŸ–¥ï¸ Urus Server",
         noServers: "Belum ada server.",
-        addServer: "➕ Tambah Server",
-        deleteServer: "🗑️ Padam Server",
-        manageFunding: "💰 Wallet Funding",
+        addServer: "âž• Tambah Server",
+        deleteServer: "ðŸ—‘ï¸ Padam Server",
+        manageFunding: "ðŸ’° Wallet Funding",
         noFundingWallet: "Belum ada wallet funding.",
-        addFunding: "➕ Tambah Funding",
-        addFundingFirst: "➕ Tambah Funding dulu",
-        deleteFunding: "🗑️ Padam Funding",
+        addFunding: "âž• Tambah Funding",
+        addFundingFirst: "âž• Tambah Funding dulu",
+        deleteFunding: "ðŸ—‘ï¸ Padam Funding",
         publicKey: "Public",
         balance: "Baki",
         id: "ID",
-        manageDestinations: "🎯 Wallet Tujuan",
+        manageDestinations: "ðŸŽ¯ Wallet Tujuan",
         noDestinations: "Belum ada wallet tujuan.",
-        addDestination: "➕ Tambah Wallet Tujuan",
-        deleteDestination: "🗑️ Padam Wallet Tujuan",
-        manageWorkers: "👷 Urus Worker",
+        addDestination: "âž• Tambah Wallet Tujuan",
+        deleteDestination: "ðŸ—‘ï¸ Padam Wallet Tujuan",
+        manageWorkers: "ðŸ‘· Urus Worker",
         noWorkers: "Belum ada worker.",
         unassigned: "Belum dipilih",
-        addWorker: "➕ Tambah Worker",
-        deleteWorker: "🗑️ Padam Worker",
+        addWorker: "âž• Tambah Worker",
+        deleteWorker: "ðŸ—‘ï¸ Padam Worker",
         noBots: "Belum ada bot TX.",
-        setNewBot: "➕ Set Bot Baharu",
-        advancedJson: "🧩 JSON Lanjutan",
-        deleteBot: "🗑️ Padam Bot",
+        setNewBot: "âž• Set Bot Baharu",
+        advancedJson: "ðŸ§© JSON Lanjutan",
+        deleteBot: "ðŸ—‘ï¸ Padam Bot",
         moreBots: "bot lain",
         parent: "Parent",
         status: "Status",
@@ -4614,46 +4614,46 @@ const TELEGRAM_LANGUAGE_TEXT = {
         network: "Network",
         time: "Masa",
         feeLoss: "Fee Loss",
-        fundingHistoryTitle: "📊 Sejarah Mutasi Funding",
+        fundingHistoryTitle: "ðŸ“Š Sejarah Mutasi Funding",
         totalMutations: "Jumlah mutasi",
         totalLoss: "Jumlah loss",
         noHistory: "Belum ada sejarah.",
         botGroup: "Bot/Group",
         workersLabel: "Workers",
         deducted: "Terpotong",
-        ledgerTitle: "🔎 Semak Ledger",
+        ledgerTitle: "ðŸ”Ž Semak Ledger",
         ledgerIntro: "Fungsi ini sama seperti menu Check Ledger di web.",
         ledgerAutoInfo: "Auto Detect = bot ambil 10 ledger terakhir daripada transaksi wallet.",
         ledgerManualInfo: "Manual Range = admin isi ledger start dan ledger end sendiri.",
-        autoDetectLedger: "🔎 Auto Detect Ledger",
-        manualLedgerRange: "✍️ Manual Ledger Range",
-        logsTitle: "📜 Live Logs",
+        autoDetectLedger: "ðŸ”Ž Auto Detect Ledger",
+        manualLedgerRange: "âœï¸ Manual Ledger Range",
+        logsTitle: "ðŸ“œ Live Logs",
         logsIntro: "Memaparkan 40 log terakhir daripada proses bot/worker.",
         noLogs: "Belum ada log.",
-        refreshLogs: "🔄 Refresh Logs",
-        multisigTitle: "🔐 Kawalan Penuh Multisig",
+        refreshLogs: "ðŸ”„ Refresh Logs",
+        multisigTitle: "ðŸ” Kawalan Penuh Multisig",
         lockedWallet: "Locked wallet",
         pendingLock: "Pending lock",
         savedWalletList: "Saved Wallet List",
         savedWalletPhraseList: "Senarai Phrase Wallet Tersimpan",
-        saveWalletList: "💾 Save Wallet List",
-        runSavedBatch: "🚀 Run Saved Batch",
-        manageSavedWallets: "📦 Senarai Wallet Tersimpan",
-        deleteAllSavedWallets: "🗑️ Padam Semua Wallet",
-        addSavedWallet: "➕ Save Wallet",
+        saveWalletList: "ðŸ’¾ Save Wallet List",
+        runSavedBatch: "ðŸš€ Run Saved Batch",
+        manageSavedWallets: "ðŸ“¦ Senarai Wallet Tersimpan",
+        deleteAllSavedWallets: "ðŸ—‘ï¸ Padam Semua Wallet",
+        addSavedWallet: "âž• Save Wallet",
         noSavedWallet: "Belum ada wallet tersimpan.",
         savedWalletIntro: "Phrase disimpan terenkripsi dan tidak akan dipadam selepas Run Batch.",
         deleteOneByOne: "Padam satu per satu",
         defaultTimezone: "Zon masa lalai",
         multisigIntro: "Semua operasi dijalankan dari Telegram berdasarkan Chat ID admin.",
-        runSetMode: "➕ Jalankan / Set Mode",
-        withdrawAllAssets: "💸 Tarik Semua Aset",
-        sweepAll: "🧹 Sweep All",
-        removeAllSigner: "🧹 Hapus Semua Signer",
-        locked: "📋 Locked",
-        pending: "⏳ Pending",
-        protocolMainnet: "🧭 Protocol Mainnet",
-        protocolTestnet: "🧪 Protocol Testnet",
+        runSetMode: "âž• Jalankan / Set Mode",
+        withdrawAllAssets: "ðŸ’¸ Tarik Semua Aset",
+        sweepAll: "ðŸ§¹ Sweep All",
+        removeAllSigner: "ðŸ§¹ Hapus Semua Signer",
+        locked: "ðŸ“‹ Locked",
+        pending: "â³ Pending",
+        protocolMainnet: "ðŸ§­ Protocol Mainnet",
+        protocolTestnet: "ðŸ§ª Protocol Testnet",
         openingHome: "Membuka menu utama...",
         chatNotAllowed: "Chat tidak diizinkan",
         typeMenuHint: "Ketik /menu untuk membuka tombol kawalan.",
@@ -4664,25 +4664,25 @@ const TELEGRAM_LANGUAGE_TEXT = {
 const TELEGRAM_PROMPT_TEXT = {
     id: {
         inputEmpty: "Input kosong. Silakan kirim ulang.",
-        serverAdded: "✅ Server ditambahkan",
-        destinationAdded: "✅ Wallet tujuan ditambahkan",
-        fundingAdded: "✅ Funding wallet ditambahkan",
+        serverAdded: "âœ… Server ditambahkan",
+        destinationAdded: "âœ… Wallet tujuan ditambahkan",
+        fundingAdded: "âœ… Funding wallet ditambahkan",
         fundingSecretDeleted: "Pesan berisi phrase sudah dicoba dihapus dari chat.",
-        workerAdded: "✅ Worker ditambahkan",
+        workerAdded: "âœ… Worker ditambahkan",
         ledgerRangePrompt: "Kirim range ledger:\n<code>START|END</code>\n\nContoh:\n<code>28120785|28120795</code>\n\nUntuk 1 ledger saja kirim:\n<code>28120785</code>",
-        autoDetectProgress: "⏳ Auto detect ledger dan scan data. Tunggu sampai selesai...",
-        scanLedgerProgress: "⏳ Scan ledger {range}. Tunggu sampai selesai...",
-        submitBeforeSaved: "✅ Submit Before disimpan",
-        telegramSettingsSaved: "✅ Telegram settings disimpan",
-        botTxCreated: "✅ Bot TX dibuat",
+        autoDetectProgress: "â³ Auto detect ledger dan scan data. Tunggu sampai selesai...",
+        scanLedgerProgress: "â³ Scan ledger {range}. Tunggu sampai selesai...",
+        submitBeforeSaved: "âœ… Submit Before disimpan",
+        telegramSettingsSaved: "âœ… Telegram settings disimpan",
+        botTxCreated: "âœ… Bot TX dibuat",
         base: "Base",
-        failed: "❌ Gagal",
+        failed: "âŒ Gagal",
         ledgerWalletPrompt: "Kirim Wallet Address Claim untuk Check Ledger.\nContoh:\n<code>GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>",
         scanExpired: "Data scan sudah expired. Silakan Check Ledger ulang.",
-        ledgerRescanProgress: "⏳ Scan ulang ledger. Tunggu sampai selesai...",
-        ledgerExcelProgress: "⏳ Membuat file Excel ledger dan mengirim ke Telegram. Tunggu sampai selesai...",
+        ledgerRescanProgress: "â³ Scan ulang ledger. Tunggu sampai selesai...",
+        ledgerExcelProgress: "â³ Membuat file Excel ledger dan mengirim ke Telegram. Tunggu sampai selesai...",
         ledgerExcelSent: "File Excel dikirim",
-        ledgerExcelError: "❌ Gagal membuat/mengirim Excel ledger",
+        ledgerExcelError: "âŒ Gagal membuat/mengirim Excel ledger",
         submitBeforePrompt: "Kirim angka SUBMIT_BEFORE_MS (0-60000).\nContoh: <code>2500</code>",
         telegramSettingsPrompt: "Kirim format:\n<code>BOT_TOKEN|CHAT_ID</code>\n\nUntuk tetap pakai token lama:\n<code>__KEEP__|CHAT_ID</code>",
         addServerPrompt: "Kirim format server:\n<code>Nama|https://url-horizon|Lokasi</code>\nContoh:\n<code>SGP1|https://api.mainnet.minepi.com|Singapore</code>",
@@ -4696,38 +4696,38 @@ const TELEGRAM_PROMPT_TEXT = {
         targetPhraseRequired: "Target phrase wajib diisi",
         targetPublicKeyRequired: "Target public key wajib diisi",
         targetTooMany: "Target terlalu banyak. Maksimal {max} baris per file/input",
-        targetFileReceived: "📄 File diterima: <b>{filename}</b>\nTarget terbaca: <b>{count}</b> {kind}.",
+        targetFileReceived: "ðŸ“„ File diterima: <b>{filename}</b>\nTarget terbaca: <b>{count}</b> {kind}.",
         targetFileInvalid: "File harus format .txt berisi satu phrase/public key per baris",
         targetFileInvalidTelegram: "File Telegram tidak valid",
         targetFilePathFailed: "Gagal mengambil path file dari Telegram",
         targetFileTooLarge: "File terlalu besar. Maksimal {max}MB",
-        saveWalletPrompt: "<b>💾 Save Wallet List</b>\nKirim phrase locked wallet per baris, atau upload file .txt berisi phrase per baris.\n\nMode ini hanya menyimpan wallet ke list, belum menjalankan multisig.",
-        savedWalletDone: "✅ Save Wallet List selesai\nTotal input: <b>{total}</b>\nBaru: <b>{added}</b> | Update: <b>{updated}</b> | Gagal: <b>{failed}</b>",
+        saveWalletPrompt: "<b>ðŸ’¾ Save Wallet List</b>\nKirim phrase locked wallet per baris, atau upload file .txt berisi phrase per baris.\n\nMode ini hanya menyimpan wallet ke list, belum menjalankan multisig.",
+        savedWalletDone: "âœ… Save Wallet List selesai\nTotal input: <b>{total}</b>\nBaru: <b>{added}</b> | Update: <b>{updated}</b> | Gagal: <b>{failed}</b>",
         savedWalletEmpty: "Tidak ada phrase wallet untuk disimpan.",
         savedWalletRunEmpty: "Saved Wallet List masih kosong. Save wallet dulu sebelum Run Saved Batch.",
-        savedWalletDeleted: "✅ Wallet dihapus dari Saved Wallet List",
+        savedWalletDeleted: "âœ… Wallet dihapus dari Saved Wallet List",
         savedWalletDeleteAllConfirm: "Yakin hapus semua wallet dari Saved Wallet List?",
-        savedWalletDeleteAllDone: "✅ Semua wallet tersimpan sudah dihapus: {count}",
+        savedWalletDeleteAllDone: "âœ… Semua wallet tersimpan sudah dihapus: {count}",
         savedWalletLoadedForRun: "Saved Wallet List dipakai sebagai target batch",
-        multisigRunStarting: "⏳ Menjalankan multisig dari Saved Wallet List. Tunggu sampai selesai...",
-        multisigRunManualStarting: "⏳ Menjalankan multisig. Tunggu sampai selesai...",
-        multisigRunPreparing: "🔎 Validasi target wallet...",
-        multisigRunProtocol: "🧭 Cek protocol jaringan...",
-        multisigRunQueued: "⏳ Protocol belum ready. Target valid disimpan ke pending queue.",
-        multisigRunBatchStarting: "🚀 Menjalankan batch {batch_no}/{batch_count}...",
-        multisigRunBatchDone: "✅ Batch {batch_no}/{batch_count} selesai.",
-        multisigRunDelay: "⏸️ Delay sebelum batch berikutnya...",
-        multisigRunCompleted: "✅ Multisig selesai diproses.",
-        multisigRunStopped: "🛑 Batch dihentikan oleh admin.",
-        stopBatch: "⛔ Stop Batch",
-        stopBatchRequested: "🛑 Stop diminta. Bot akan berhenti setelah batch/transaksi yang sedang berjalan selesai.",
-        watchSignerAutoInstall: "🔁 Watch Signer Auto Install",
-        setSignerTestWallet: "🧪 Set Test Wallet",
-        stopBatchInstallLock: "⛔ Stop Batch Install Lock",
-        signerWatchTitle: "🔁 Watch Signer Mainnet",
+        multisigRunStarting: "â³ Menjalankan multisig dari Saved Wallet List. Tunggu sampai selesai...",
+        multisigRunManualStarting: "â³ Menjalankan multisig. Tunggu sampai selesai...",
+        multisigRunPreparing: "ðŸ”Ž Validasi target wallet...",
+        multisigRunProtocol: "ðŸ§­ Cek protocol jaringan...",
+        multisigRunQueued: "â³ Protocol belum ready. Target valid disimpan ke pending queue.",
+        multisigRunBatchStarting: "ðŸš€ Menjalankan batch {batch_no}/{batch_count}...",
+        multisigRunBatchDone: "âœ… Batch {batch_no}/{batch_count} selesai.",
+        multisigRunDelay: "â¸ï¸ Delay sebelum batch berikutnya...",
+        multisigRunCompleted: "âœ… Multisig selesai diproses.",
+        multisigRunStopped: "ðŸ›‘ Batch dihentikan oleh admin.",
+        stopBatch: "â›” Stop Batch",
+        stopBatchRequested: "ðŸ›‘ Stop diminta. Bot akan berhenti setelah batch/transaksi yang sedang berjalan selesai.",
+        watchSignerAutoInstall: "ðŸ” Watch Signer Auto Install",
+        setSignerTestWallet: "ðŸ§ª Set Test Wallet",
+        stopBatchInstallLock: "â›” Stop Batch Install Lock",
+        signerWatchTitle: "ðŸ” Watch Signer Mainnet",
         signerWatchTestPhrasePrompt: "Kirim 1 phrase khusus untuk test signer mainnet. Phrase ini terpisah dari Saved Wallet List. Bot akan mencoba menghapus pesan setelah diproses.",
-        signerWatchTestPhraseSaved: "✅ Test phrase signer disimpan",
-        signerWatchSignerReadyAutoRun: "✅ Signer mainnet sudah aktif. Bot menjalankan Install Lock otomatis dari Saved Wallet List.",
+        signerWatchTestPhraseSaved: "âœ… Test phrase signer disimpan",
+        signerWatchSignerReadyAutoRun: "âœ… Signer mainnet sudah aktif. Bot menjalankan Install Lock otomatis dari Saved Wallet List.",
         progressSource: "Sumber",
         progressTargets: "Targets",
         progressValid: "Valid",
@@ -4739,31 +4739,31 @@ const TELEGRAM_PROMPT_TEXT = {
         progressBatchModeIsolated: "Per wallet terpisah",
         progressBatchModeParallelIsolated: "Paralel per wallet terpisah",
         progressDelay: "Delay",
-        saveOnlyButton: "💾 Save Only ke List",
+        saveOnlyButton: "ðŸ’¾ Save Only ke List",
         phraseKind: "phrase",
         publicKeyKind: "public key",
     },
     en: {
         inputEmpty: "Input is empty. Please send it again.",
-        serverAdded: "✅ Server added",
-        destinationAdded: "✅ Destination wallet added",
-        fundingAdded: "✅ Funding wallet added",
+        serverAdded: "âœ… Server added",
+        destinationAdded: "âœ… Destination wallet added",
+        fundingAdded: "âœ… Funding wallet added",
         fundingSecretDeleted: "The message containing the phrase was deleted from chat if possible.",
-        workerAdded: "✅ Worker added",
+        workerAdded: "âœ… Worker added",
         ledgerRangePrompt: "Send ledger range:\n<code>START|END</code>\n\nExample:\n<code>28120785|28120795</code>\n\nFor one ledger only, send:\n<code>28120785</code>",
-        autoDetectProgress: "⏳ Auto-detecting ledger and scanning data. Please wait...",
-        scanLedgerProgress: "⏳ Scanning ledger {range}. Please wait...",
-        submitBeforeSaved: "✅ Submit Before saved",
-        telegramSettingsSaved: "✅ Telegram settings saved",
-        botTxCreated: "✅ TX Bot created",
+        autoDetectProgress: "â³ Auto-detecting ledger and scanning data. Please wait...",
+        scanLedgerProgress: "â³ Scanning ledger {range}. Please wait...",
+        submitBeforeSaved: "âœ… Submit Before saved",
+        telegramSettingsSaved: "âœ… Telegram settings saved",
+        botTxCreated: "âœ… TX Bot created",
         base: "Base",
-        failed: "❌ Failed",
+        failed: "âŒ Failed",
         ledgerWalletPrompt: "Send the Claim Wallet Address for Check Ledger.\nExample:\n<code>GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>",
         scanExpired: "Scan data has expired. Please run Check Ledger again.",
-        ledgerRescanProgress: "⏳ Rescanning ledger. Please wait...",
-        ledgerExcelProgress: "⏳ Creating the ledger Excel file and sending it to Telegram. Please wait...",
+        ledgerRescanProgress: "â³ Rescanning ledger. Please wait...",
+        ledgerExcelProgress: "â³ Creating the ledger Excel file and sending it to Telegram. Please wait...",
         ledgerExcelSent: "Excel file sent",
-        ledgerExcelError: "❌ Failed to create/send ledger Excel",
+        ledgerExcelError: "âŒ Failed to create/send ledger Excel",
         submitBeforePrompt: "Send SUBMIT_BEFORE_MS value (0-60000).\nExample: <code>2500</code>",
         telegramSettingsPrompt: "Send this format:\n<code>BOT_TOKEN|CHAT_ID</code>\n\nTo keep the old token:\n<code>__KEEP__|CHAT_ID</code>",
         addServerPrompt: "Send server format:\n<code>Name|https://horizon-url|Location</code>\nExample:\n<code>SGP1|https://api.mainnet.minepi.com|Singapore</code>",
@@ -4777,38 +4777,38 @@ const TELEGRAM_PROMPT_TEXT = {
         targetPhraseRequired: "Target phrase is required",
         targetPublicKeyRequired: "Target public key is required",
         targetTooMany: "Too many targets. Maximum {max} lines per file/input",
-        targetFileReceived: "📄 File received: <b>{filename}</b>\nTargets read: <b>{count}</b> {kind}.",
+        targetFileReceived: "ðŸ“„ File received: <b>{filename}</b>\nTargets read: <b>{count}</b> {kind}.",
         targetFileInvalid: "File must be a .txt file with one phrase/public key per line",
         targetFileInvalidTelegram: "Invalid Telegram file",
         targetFilePathFailed: "Failed to get file path from Telegram",
         targetFileTooLarge: "File is too large. Maximum {max}MB",
-        saveWalletPrompt: "<b>💾 Save Wallet List</b>\nSend locked-wallet phrases, one per line, or upload a .txt file with one phrase per line.\n\nThis mode only saves wallets to the list and does not run multisig yet.",
-        savedWalletDone: "✅ Save Wallet List completed\nTotal input: <b>{total}</b>\nNew: <b>{added}</b> | Updated: <b>{updated}</b> | Failed: <b>{failed}</b>",
+        saveWalletPrompt: "<b>ðŸ’¾ Save Wallet List</b>\nSend locked-wallet phrases, one per line, or upload a .txt file with one phrase per line.\n\nThis mode only saves wallets to the list and does not run multisig yet.",
+        savedWalletDone: "âœ… Save Wallet List completed\nTotal input: <b>{total}</b>\nNew: <b>{added}</b> | Updated: <b>{updated}</b> | Failed: <b>{failed}</b>",
         savedWalletEmpty: "No wallet phrases to save.",
         savedWalletRunEmpty: "Saved Wallet List is empty. Save wallets before running Saved Batch.",
-        savedWalletDeleted: "✅ Wallet deleted from Saved Wallet List",
+        savedWalletDeleted: "âœ… Wallet deleted from Saved Wallet List",
         savedWalletDeleteAllConfirm: "Delete all wallets from Saved Wallet List?",
-        savedWalletDeleteAllDone: "✅ All saved wallets deleted: {count}",
+        savedWalletDeleteAllDone: "âœ… All saved wallets deleted: {count}",
         savedWalletLoadedForRun: "Saved Wallet List is used as the batch target",
-        multisigRunStarting: "⏳ Running multisig from Saved Wallet List. Please wait until it finishes...",
-        multisigRunManualStarting: "⏳ Running multisig. Please wait until it finishes...",
-        multisigRunPreparing: "🔎 Validating target wallets...",
-        multisigRunProtocol: "🧭 Checking network protocol...",
-        multisigRunQueued: "⏳ Protocol is not ready. Valid targets were saved to the pending queue.",
-        multisigRunBatchStarting: "🚀 Running batch {batch_no}/{batch_count}...",
-        multisigRunBatchDone: "✅ Batch {batch_no}/{batch_count} completed.",
-        multisigRunDelay: "⏸️ Waiting before the next batch...",
-        multisigRunCompleted: "✅ Multisig processing completed.",
-        multisigRunStopped: "🛑 Batch stopped by admin.",
-        stopBatch: "⛔ Stop Batch",
-        stopBatchRequested: "🛑 Stop requested. The bot will stop after the current batch/transaction finishes.",
-        watchSignerAutoInstall: "🔁 Watch Signer Auto Install",
-        setSignerTestWallet: "🧪 Set Test Wallet",
-        stopBatchInstallLock: "⛔ Stop Install Lock Batch",
-        signerWatchTitle: "🔁 Watch Mainnet Signer",
+        multisigRunStarting: "â³ Running multisig from Saved Wallet List. Please wait until it finishes...",
+        multisigRunManualStarting: "â³ Running multisig. Please wait until it finishes...",
+        multisigRunPreparing: "ðŸ”Ž Validating target wallets...",
+        multisigRunProtocol: "ðŸ§­ Checking network protocol...",
+        multisigRunQueued: "â³ Protocol is not ready. Valid targets were saved to the pending queue.",
+        multisigRunBatchStarting: "ðŸš€ Running batch {batch_no}/{batch_count}...",
+        multisigRunBatchDone: "âœ… Batch {batch_no}/{batch_count} completed.",
+        multisigRunDelay: "â¸ï¸ Waiting before the next batch...",
+        multisigRunCompleted: "âœ… Multisig processing completed.",
+        multisigRunStopped: "ðŸ›‘ Batch stopped by admin.",
+        stopBatch: "â›” Stop Batch",
+        stopBatchRequested: "ðŸ›‘ Stop requested. The bot will stop after the current batch/transaction finishes.",
+        watchSignerAutoInstall: "ðŸ” Watch Signer Auto Install",
+        setSignerTestWallet: "ðŸ§ª Set Test Wallet",
+        stopBatchInstallLock: "â›” Stop Install Lock Batch",
+        signerWatchTitle: "ðŸ” Watch Mainnet Signer",
         signerWatchTestPhrasePrompt: "Send exactly 1 phrase for the mainnet signer test. This phrase is separate from the Saved Wallet List. The bot will try to delete the message after processing.",
-        signerWatchTestPhraseSaved: "✅ Signer test phrase saved",
-        signerWatchSignerReadyAutoRun: "✅ Mainnet signer is active. The bot is running Install Lock automatically from the Saved Wallet List.",
+        signerWatchTestPhraseSaved: "âœ… Signer test phrase saved",
+        signerWatchSignerReadyAutoRun: "âœ… Mainnet signer is active. The bot is running Install Lock automatically from the Saved Wallet List.",
         progressSource: "Source",
         progressTargets: "Targets",
         progressValid: "Valid",
@@ -4820,31 +4820,31 @@ const TELEGRAM_PROMPT_TEXT = {
         progressBatchModeIsolated: "Per-wallet isolated",
         progressBatchModeParallelIsolated: "Parallel per-wallet isolated",
         progressDelay: "Delay",
-        saveOnlyButton: "💾 Save Only to List",
+        saveOnlyButton: "ðŸ’¾ Save Only to List",
         phraseKind: "phrases",
         publicKeyKind: "public keys",
     },
     ms: {
         inputEmpty: "Input kosong. Sila hantar semula.",
-        serverAdded: "✅ Server ditambah",
-        destinationAdded: "✅ Wallet tujuan ditambah",
-        fundingAdded: "✅ Wallet funding ditambah",
+        serverAdded: "âœ… Server ditambah",
+        destinationAdded: "âœ… Wallet tujuan ditambah",
+        fundingAdded: "âœ… Wallet funding ditambah",
         fundingSecretDeleted: "Pesan yang mengandungi phrase sudah dicuba dipadam dari chat.",
-        workerAdded: "✅ Worker ditambah",
+        workerAdded: "âœ… Worker ditambah",
         ledgerRangePrompt: "Kirim julat ledger:\n<code>START|END</code>\n\nContoh:\n<code>28120785|28120795</code>\n\nUntuk 1 ledger sahaja kirim:\n<code>28120785</code>",
-        autoDetectProgress: "⏳ Auto detect ledger dan scan data. Sila tunggu...",
-        scanLedgerProgress: "⏳ Scan ledger {range}. Sila tunggu...",
-        submitBeforeSaved: "✅ Submit Before disimpan",
-        telegramSettingsSaved: "✅ Tetapan Telegram disimpan",
-        botTxCreated: "✅ Bot TX dibuat",
+        autoDetectProgress: "â³ Auto detect ledger dan scan data. Sila tunggu...",
+        scanLedgerProgress: "â³ Scan ledger {range}. Sila tunggu...",
+        submitBeforeSaved: "âœ… Submit Before disimpan",
+        telegramSettingsSaved: "âœ… Tetapan Telegram disimpan",
+        botTxCreated: "âœ… Bot TX dibuat",
         base: "Base",
-        failed: "❌ Gagal",
+        failed: "âŒ Gagal",
         ledgerWalletPrompt: "Kirim Wallet Address Claim untuk Semak Ledger.\nContoh:\n<code>GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX</code>",
         scanExpired: "Data scan sudah tamat tempoh. Sila Semak Ledger semula.",
-        ledgerRescanProgress: "⏳ Scan ulang ledger. Sila tunggu...",
-        ledgerExcelProgress: "⏳ Membuat fail Excel ledger dan menghantar ke Telegram. Sila tunggu...",
+        ledgerRescanProgress: "â³ Scan ulang ledger. Sila tunggu...",
+        ledgerExcelProgress: "â³ Membuat fail Excel ledger dan menghantar ke Telegram. Sila tunggu...",
         ledgerExcelSent: "Fail Excel dihantar",
-        ledgerExcelError: "❌ Gagal membuat/menghantar Excel ledger",
+        ledgerExcelError: "âŒ Gagal membuat/menghantar Excel ledger",
         submitBeforePrompt: "Kirim angka SUBMIT_BEFORE_MS (0-60000).\nContoh: <code>2500</code>",
         telegramSettingsPrompt: "Kirim format:\n<code>BOT_TOKEN|CHAT_ID</code>\n\nUntuk tetap pakai token lama:\n<code>__KEEP__|CHAT_ID</code>",
         addServerPrompt: "Kirim format server:\n<code>Nama|https://url-horizon|Lokasi</code>\nContoh:\n<code>SGP1|https://api.mainnet.minepi.com|Singapore</code>",
@@ -4858,38 +4858,38 @@ const TELEGRAM_PROMPT_TEXT = {
         targetPhraseRequired: "Target phrase wajib diisi",
         targetPublicKeyRequired: "Target public key wajib diisi",
         targetTooMany: "Target terlalu banyak. Maksimum {max} baris per fail/input",
-        targetFileReceived: "📄 Fail diterima: <b>{filename}</b>\nTarget dibaca: <b>{count}</b> {kind}.",
+        targetFileReceived: "ðŸ“„ Fail diterima: <b>{filename}</b>\nTarget dibaca: <b>{count}</b> {kind}.",
         targetFileInvalid: "Fail mesti format .txt dengan satu phrase/public key per baris",
         targetFileInvalidTelegram: "Fail Telegram tidak valid",
         targetFilePathFailed: "Gagal mengambil path fail dari Telegram",
         targetFileTooLarge: "Fail terlalu besar. Maksimum {max}MB",
-        saveWalletPrompt: "<b>💾 Save Wallet List</b>\nKirim phrase locked wallet per baris, atau upload fail .txt berisi phrase per baris.\n\nMode ini hanya menyimpan wallet ke senarai, belum menjalankan multisig.",
-        savedWalletDone: "✅ Save Wallet List selesai\nJumlah input: <b>{total}</b>\nBaru: <b>{added}</b> | Update: <b>{updated}</b> | Gagal: <b>{failed}</b>",
+        saveWalletPrompt: "<b>ðŸ’¾ Save Wallet List</b>\nKirim phrase locked wallet per baris, atau upload fail .txt berisi phrase per baris.\n\nMode ini hanya menyimpan wallet ke senarai, belum menjalankan multisig.",
+        savedWalletDone: "âœ… Save Wallet List selesai\nJumlah input: <b>{total}</b>\nBaru: <b>{added}</b> | Update: <b>{updated}</b> | Gagal: <b>{failed}</b>",
         savedWalletEmpty: "Tiada phrase wallet untuk disimpan.",
         savedWalletRunEmpty: "Saved Wallet List masih kosong. Save wallet dulu sebelum Run Saved Batch.",
-        savedWalletDeleted: "✅ Wallet dipadam dari Saved Wallet List",
+        savedWalletDeleted: "âœ… Wallet dipadam dari Saved Wallet List",
         savedWalletDeleteAllConfirm: "Yakin padam semua wallet dari Saved Wallet List?",
-        savedWalletDeleteAllDone: "✅ Semua wallet tersimpan sudah dipadam: {count}",
+        savedWalletDeleteAllDone: "âœ… Semua wallet tersimpan sudah dipadam: {count}",
         savedWalletLoadedForRun: "Saved Wallet List dipakai sebagai target batch",
-        multisigRunStarting: "⏳ Menjalankan multisig dari Saved Wallet List. Sila tunggu sampai selesai...",
-        multisigRunManualStarting: "⏳ Menjalankan multisig. Sila tunggu sampai selesai...",
-        multisigRunPreparing: "🔎 Validasi target wallet...",
-        multisigRunProtocol: "🧭 Semak protocol jaringan...",
-        multisigRunQueued: "⏳ Protocol belum ready. Target valid disimpan ke pending queue.",
-        multisigRunBatchStarting: "🚀 Menjalankan batch {batch_no}/{batch_count}...",
-        multisigRunBatchDone: "✅ Batch {batch_no}/{batch_count} selesai.",
-        multisigRunDelay: "⏸️ Delay sebelum batch berikutnya...",
-        multisigRunCompleted: "✅ Multisig selesai diproses.",
-        multisigRunStopped: "🛑 Batch dihentikan oleh admin.",
-        stopBatch: "⛔ Stop Batch",
-        stopBatchRequested: "🛑 Stop diminta. Bot akan berhenti selepas batch/transaksi yang sedang berjalan selesai.",
-        watchSignerAutoInstall: "🔁 Watch Signer Auto Install",
-        setSignerTestWallet: "🧪 Set Test Wallet",
-        stopBatchInstallLock: "⛔ Stop Batch Install Lock",
-        signerWatchTitle: "🔁 Watch Signer Mainnet",
+        multisigRunStarting: "â³ Menjalankan multisig dari Saved Wallet List. Sila tunggu sampai selesai...",
+        multisigRunManualStarting: "â³ Menjalankan multisig. Sila tunggu sampai selesai...",
+        multisigRunPreparing: "ðŸ”Ž Validasi target wallet...",
+        multisigRunProtocol: "ðŸ§­ Semak protocol jaringan...",
+        multisigRunQueued: "â³ Protocol belum ready. Target valid disimpan ke pending queue.",
+        multisigRunBatchStarting: "ðŸš€ Menjalankan batch {batch_no}/{batch_count}...",
+        multisigRunBatchDone: "âœ… Batch {batch_no}/{batch_count} selesai.",
+        multisigRunDelay: "â¸ï¸ Delay sebelum batch berikutnya...",
+        multisigRunCompleted: "âœ… Multisig selesai diproses.",
+        multisigRunStopped: "ðŸ›‘ Batch dihentikan oleh admin.",
+        stopBatch: "â›” Stop Batch",
+        stopBatchRequested: "ðŸ›‘ Stop diminta. Bot akan berhenti selepas batch/transaksi yang sedang berjalan selesai.",
+        watchSignerAutoInstall: "ðŸ” Watch Signer Auto Install",
+        setSignerTestWallet: "ðŸ§ª Set Test Wallet",
+        stopBatchInstallLock: "â›” Stop Batch Install Lock",
+        signerWatchTitle: "ðŸ” Watch Signer Mainnet",
         signerWatchTestPhrasePrompt: "Kirim 1 phrase khas untuk test signer mainnet. Phrase ini berasingan daripada Saved Wallet List. Bot akan cuba memadam mesej selepas diproses.",
-        signerWatchTestPhraseSaved: "✅ Test phrase signer disimpan",
-        signerWatchSignerReadyAutoRun: "✅ Signer mainnet sudah aktif. Bot menjalankan Install Lock automatik daripada Saved Wallet List.",
+        signerWatchTestPhraseSaved: "âœ… Test phrase signer disimpan",
+        signerWatchSignerReadyAutoRun: "âœ… Signer mainnet sudah aktif. Bot menjalankan Install Lock automatik daripada Saved Wallet List.",
         progressSource: "Sumber",
         progressTargets: "Targets",
         progressValid: "Valid",
@@ -4901,7 +4901,7 @@ const TELEGRAM_PROMPT_TEXT = {
         progressBatchModeIsolated: "Per wallet terpisah",
         progressBatchModeParallelIsolated: "Selari per wallet terpisah",
         progressDelay: "Delay",
-        saveOnlyButton: "💾 Save Only ke List",
+        saveOnlyButton: "ðŸ’¾ Save Only ke List",
         phraseKind: "phrase",
         publicKeyKind: "public key",
     },
@@ -4909,50 +4909,50 @@ const TELEGRAM_PROMPT_TEXT = {
 
 Object.assign(TELEGRAM_LANGUAGE_TEXT.id, {
     pageLabel: "Halaman",
-    previousButton: "⬅️ Prev",
-    nextButton: "Next ➡️",
+    previousButton: "â¬…ï¸ Prev",
+    nextButton: "Next âž¡ï¸",
 });
 Object.assign(TELEGRAM_LANGUAGE_TEXT.en, {
     pageLabel: "Page",
-    previousButton: "⬅️ Prev",
-    nextButton: "Next ➡️",
+    previousButton: "â¬…ï¸ Prev",
+    nextButton: "Next âž¡ï¸",
 });
 Object.assign(TELEGRAM_LANGUAGE_TEXT.ms, {
     pageLabel: "Halaman",
-    previousButton: "⬅️ Prev",
-    nextButton: "Seterusnya ➡️",
+    previousButton: "â¬…ï¸ Prev",
+    nextButton: "Seterusnya âž¡ï¸",
 });
 
 
 Object.assign(TELEGRAM_LANGUAGE_TEXT.id, {
-    bumpWallets: "🧾 Bump Wallet",
-    manageBump: "💼 Manage Bump",
+    bumpWallets: "ðŸ§¾ Bump Wallet",
+    manageBump: "ðŸ’¼ Manage Bump",
     noBumpWallet: "Belum ada wallet di bump.txt.",
-    addBumpWallet: "➕ Add Bump",
-    uploadBumpTxt: "📤 Upload bump.txt",
-    showBumpWallet: "👁️ Show Bump",
-    deleteOneBumpWallet: "🗑️ Delete 1 Bump",
-    deleteAllBumpWallet: "🧹 Delete All Bump",
+    addBumpWallet: "âž• Add Bump",
+    uploadBumpTxt: "ðŸ“¤ Upload bump.txt",
+    showBumpWallet: "ðŸ‘ï¸ Show Bump",
+    deleteOneBumpWallet: "ðŸ—‘ï¸ Delete 1 Bump",
+    deleteAllBumpWallet: "ðŸ§¹ Delete All Bump",
 });
 Object.assign(TELEGRAM_LANGUAGE_TEXT.en, {
-    bumpWallets: "🧾 Bump Wallets",
-    manageBump: "💼 Manage Bump",
+    bumpWallets: "ðŸ§¾ Bump Wallets",
+    manageBump: "ðŸ’¼ Manage Bump",
     noBumpWallet: "No wallets in bump.txt yet.",
-    addBumpWallet: "➕ Add Bump",
-    uploadBumpTxt: "📤 Upload bump.txt",
-    showBumpWallet: "👁️ Show Bump",
-    deleteOneBumpWallet: "🗑️ Delete 1 Bump",
-    deleteAllBumpWallet: "🧹 Delete All Bump",
+    addBumpWallet: "âž• Add Bump",
+    uploadBumpTxt: "ðŸ“¤ Upload bump.txt",
+    showBumpWallet: "ðŸ‘ï¸ Show Bump",
+    deleteOneBumpWallet: "ðŸ—‘ï¸ Delete 1 Bump",
+    deleteAllBumpWallet: "ðŸ§¹ Delete All Bump",
 });
 Object.assign(TELEGRAM_LANGUAGE_TEXT.ms, {
-    bumpWallets: "🧾 Wallet Bump",
-    manageBump: "💼 Urus Bump",
+    bumpWallets: "ðŸ§¾ Wallet Bump",
+    manageBump: "ðŸ’¼ Urus Bump",
     noBumpWallet: "Belum ada wallet dalam bump.txt.",
-    addBumpWallet: "➕ Tambah Bump",
-    uploadBumpTxt: "📤 Upload bump.txt",
-    showBumpWallet: "👁️ Papar Bump",
-    deleteOneBumpWallet: "🗑️ Padam 1 Bump",
-    deleteAllBumpWallet: "🧹 Padam Semua Bump",
+    addBumpWallet: "âž• Tambah Bump",
+    uploadBumpTxt: "ðŸ“¤ Upload bump.txt",
+    showBumpWallet: "ðŸ‘ï¸ Papar Bump",
+    deleteOneBumpWallet: "ðŸ—‘ï¸ Padam 1 Bump",
+    deleteAllBumpWallet: "ðŸ§¹ Padam Semua Bump",
 });
 
 Object.assign(TELEGRAM_PROMPT_TEXT.id, {
@@ -4961,13 +4961,13 @@ Object.assign(TELEGRAM_PROMPT_TEXT.id, {
     loadingEta: "Estimasi sisa",
     loadingProgress: "Progress",
     loadingUnknown: "menghitung...",
-    loadingSavedWallets: "⏳ Menyimpan Saved Wallet List...",
-    loadingGeneratingExcel: "⏳ Membuat file Excel ledger...",
-    loadingLedgerRescan: "⏳ Men-scan ulang ledger...",
+    loadingSavedWallets: "â³ Menyimpan Saved Wallet List...",
+    loadingGeneratingExcel: "â³ Membuat file Excel ledger...",
+    loadingLedgerRescan: "â³ Men-scan ulang ledger...",
     loadingAutoDetectSubtext: "Bot sedang mendeteksi range ledger dan memproses data transaksi.",
     loadingManualScanSubtext: "Bot sedang memproses data transaksi pada range ledger yang dipilih.",
     loadingExcelSubtext: "Bot sedang membuat file Excel dan menyiapkan pengiriman ke Telegram.",
-    ledgerCompleteTitle: "✅ Check Ledger selesai",
+    ledgerCompleteTitle: "âœ… Check Ledger selesai",
     ledgerTopCompetitorTitle: "Top Competitor / Send",
     ledgerClaimOnlyTitle: "Claim Only",
     ledgerFirstLogsTitle: "Log TX pertama",
@@ -4975,23 +4975,23 @@ Object.assign(TELEGRAM_PROMPT_TEXT.id, {
     ledgerNoClaimOnly: "Tidak ada data claim only.",
     ledgerNoLogs: "Tidak ada transaksi yang cocok di range ini.",
     ledgerMoreLogs: "...dan {count} log lain. Pakai Download Excel untuk data lengkap.",
-    downloadExcelButton: "📥 Download Excel",
-    rescanButton: "🔄 Scan Ulang",
-    checkAnotherButton: "🔎 Check Lain",
-    savedWalletSavingDone: "✅ Saved Wallet List berhasil disimpan",
-    signerWallet: "✍️ Signer Wallet",
-    addSigner: "➕ Add Signer",
-    manageSigners: "✍️ Signer Wallets",
+    downloadExcelButton: "ðŸ“¥ Download Excel",
+    rescanButton: "ðŸ”„ Scan Ulang",
+    checkAnotherButton: "ðŸ”Ž Check Lain",
+    savedWalletSavingDone: "âœ… Saved Wallet List berhasil disimpan",
+    signerWallet: "âœï¸ Signer Wallet",
+    addSigner: "âž• Add Signer",
+    manageSigners: "âœï¸ Signer Wallets",
     noSignerWallet: "Belum ada signer wallet.",
-    deleteSigner: "🗑️ Delete Signer",
-    signerAdded: "✅ Signer Wallet ditambahkan",
-    signerDeleted: "✅ Signer Wallet dihapus",
+    deleteSigner: "ðŸ—‘ï¸ Delete Signer",
+    signerAdded: "âœ… Signer Wallet ditambahkan",
+    signerDeleted: "âœ… Signer Wallet dihapus",
     signerDeleteAllConfirm: "Yakin hapus semua Signer Wallet?",
-    signerDeleteAllDone: "✅ Semua Signer Wallet dihapus: {count}",
+    signerDeleteAllDone: "âœ… Semua Signer Wallet dihapus: {count}",
     addSignerPrompt: "Kirim format signer:\n<code>Nama|mnemonic/passphrase</code>\n\nPhrase signer boleh belum aktif mainnet. Bot akan mencoba menghapus pesan phrase setelah diproses.",
-    chooseSignerTitle: "✍️ Pilih Signer Wallet",
+    chooseSignerTitle: "âœï¸ Pilih Signer Wallet",
     chooseSignerPrompt: "Funding hanya bayar fee/fee bump. Signer ini yang akan dipasang ke target dan dipakai menandatangani transaksi target.",
-    addSignerFirst: "➕ Add Signer dulu",
+    addSignerFirst: "âž• Add Signer dulu",
 });
 Object.assign(TELEGRAM_PROMPT_TEXT.en, {
     loadingKeepOpen: "Please wait. The process is running. Keep this menu open.",
@@ -4999,13 +4999,13 @@ Object.assign(TELEGRAM_PROMPT_TEXT.en, {
     loadingEta: "Estimated remaining",
     loadingProgress: "Progress",
     loadingUnknown: "calculating...",
-    loadingSavedWallets: "⏳ Saving the Saved Wallet List...",
-    loadingGeneratingExcel: "⏳ Creating the ledger Excel file...",
-    loadingLedgerRescan: "⏳ Rescanning the ledger...",
+    loadingSavedWallets: "â³ Saving the Saved Wallet List...",
+    loadingGeneratingExcel: "â³ Creating the ledger Excel file...",
+    loadingLedgerRescan: "â³ Rescanning the ledger...",
     loadingAutoDetectSubtext: "The bot is detecting the ledger range and processing transaction data.",
     loadingManualScanSubtext: "The bot is processing transaction data for the selected ledger range.",
     loadingExcelSubtext: "The bot is creating the Excel file and preparing it for Telegram delivery.",
-    ledgerCompleteTitle: "✅ Check Ledger completed",
+    ledgerCompleteTitle: "âœ… Check Ledger completed",
     ledgerTopCompetitorTitle: "Top Competitor / Send",
     ledgerClaimOnlyTitle: "Claim Only",
     ledgerFirstLogsTitle: "First TX logs",
@@ -5013,23 +5013,23 @@ Object.assign(TELEGRAM_PROMPT_TEXT.en, {
     ledgerNoClaimOnly: "No claim-only data found.",
     ledgerNoLogs: "No matching transactions were found in this range.",
     ledgerMoreLogs: "...and {count} more logs. Use Download Excel for the full data.",
-    downloadExcelButton: "📥 Download Excel",
-    rescanButton: "🔄 Rescan",
-    checkAnotherButton: "🔎 Check Another",
-    savedWalletSavingDone: "✅ Saved Wallet List saved successfully",
-    signerWallet: "✍️ Signer Wallet",
-    addSigner: "➕ Add Signer",
-    manageSigners: "✍️ Signer Wallets",
+    downloadExcelButton: "ðŸ“¥ Download Excel",
+    rescanButton: "ðŸ”„ Rescan",
+    checkAnotherButton: "ðŸ”Ž Check Another",
+    savedWalletSavingDone: "âœ… Saved Wallet List saved successfully",
+    signerWallet: "âœï¸ Signer Wallet",
+    addSigner: "âž• Add Signer",
+    manageSigners: "âœï¸ Signer Wallets",
     noSignerWallet: "No signer wallets yet.",
-    deleteSigner: "🗑️ Delete Signer",
-    signerAdded: "✅ Signer Wallet added",
-    signerDeleted: "✅ Signer Wallet deleted",
+    deleteSigner: "ðŸ—‘ï¸ Delete Signer",
+    signerAdded: "âœ… Signer Wallet added",
+    signerDeleted: "âœ… Signer Wallet deleted",
     signerDeleteAllConfirm: "Delete all Signer Wallets?",
-    signerDeleteAllDone: "✅ All Signer Wallets deleted: {count}",
+    signerDeleteAllDone: "âœ… All Signer Wallets deleted: {count}",
     addSignerPrompt: "Send signer format:\n<code>Name|mnemonic/passphrase</code>\n\nThe signer phrase can be inactive on mainnet. The bot will try to delete the phrase message after processing.",
-    chooseSignerTitle: "✍️ Choose Signer Wallet",
+    chooseSignerTitle: "âœï¸ Choose Signer Wallet",
     chooseSignerPrompt: "Funding only pays fee/fee bump. This signer will be installed on the target and used to sign target transactions.",
-    addSignerFirst: "➕ Add Signer first",
+    addSignerFirst: "âž• Add Signer first",
 });
 Object.assign(TELEGRAM_PROMPT_TEXT.ms, {
     loadingKeepOpen: "Sila tunggu. Proses sedang berjalan. Jangan tutup menu ini.",
@@ -5037,13 +5037,13 @@ Object.assign(TELEGRAM_PROMPT_TEXT.ms, {
     loadingEta: "Anggaran baki",
     loadingProgress: "Kemajuan",
     loadingUnknown: "mengira...",
-    loadingSavedWallets: "⏳ Menyimpan Saved Wallet List...",
-    loadingGeneratingExcel: "⏳ Menjana fail Excel ledger...",
-    loadingLedgerRescan: "⏳ Mengimbas semula ledger...",
+    loadingSavedWallets: "â³ Menyimpan Saved Wallet List...",
+    loadingGeneratingExcel: "â³ Menjana fail Excel ledger...",
+    loadingLedgerRescan: "â³ Mengimbas semula ledger...",
     loadingAutoDetectSubtext: "Bot sedang mengesan julat ledger dan memproses data transaksi.",
     loadingManualScanSubtext: "Bot sedang memproses data transaksi untuk julat ledger yang dipilih.",
     loadingExcelSubtext: "Bot sedang menjana fail Excel dan menyediakan penghantaran ke Telegram.",
-    ledgerCompleteTitle: "✅ Semakan Ledger selesai",
+    ledgerCompleteTitle: "âœ… Semakan Ledger selesai",
     ledgerTopCompetitorTitle: "Pesaing Teratas / Hantar",
     ledgerClaimOnlyTitle: "Tuntut Sahaja",
     ledgerFirstLogsTitle: "Log TX pertama",
@@ -5051,49 +5051,49 @@ Object.assign(TELEGRAM_PROMPT_TEXT.ms, {
     ledgerNoClaimOnly: "Tiada data tuntut sahaja.",
     ledgerNoLogs: "Tiada transaksi sepadan ditemui dalam julat ini.",
     ledgerMoreLogs: "...dan {count} log lagi. Gunakan Download Excel untuk data penuh.",
-    downloadExcelButton: "📥 Muat Turun Excel",
-    rescanButton: "🔄 Imbas Semula",
-    checkAnotherButton: "🔎 Semak Lagi",
-    savedWalletSavingDone: "✅ Saved Wallet List berjaya disimpan",
-    signerWallet: "✍️ Signer Wallet",
-    addSigner: "➕ Add Signer",
-    manageSigners: "✍️ Signer Wallets",
+    downloadExcelButton: "ðŸ“¥ Muat Turun Excel",
+    rescanButton: "ðŸ”„ Imbas Semula",
+    checkAnotherButton: "ðŸ”Ž Semak Lagi",
+    savedWalletSavingDone: "âœ… Saved Wallet List berjaya disimpan",
+    signerWallet: "âœï¸ Signer Wallet",
+    addSigner: "âž• Add Signer",
+    manageSigners: "âœï¸ Signer Wallets",
     noSignerWallet: "Belum ada signer wallet.",
-    deleteSigner: "🗑️ Padam Signer",
-    signerAdded: "✅ Signer Wallet ditambah",
-    signerDeleted: "✅ Signer Wallet dipadam",
+    deleteSigner: "ðŸ—‘ï¸ Padam Signer",
+    signerAdded: "âœ… Signer Wallet ditambah",
+    signerDeleted: "âœ… Signer Wallet dipadam",
     signerDeleteAllConfirm: "Yakin padam semua Signer Wallet?",
-    signerDeleteAllDone: "✅ Semua Signer Wallet dipadam: {count}",
+    signerDeleteAllDone: "âœ… Semua Signer Wallet dipadam: {count}",
     addSignerPrompt: "Kirim format signer:\n<code>Nama|mnemonic/passphrase</code>\n\nPhrase signer boleh belum aktif mainnet. Bot akan cuba memadam mesej phrase selepas diproses.",
-    chooseSignerTitle: "✍️ Pilih Signer Wallet",
+    chooseSignerTitle: "âœï¸ Pilih Signer Wallet",
     chooseSignerPrompt: "Funding hanya bayar fee/fee bump. Signer ini yang akan dipasang pada target dan dipakai menandatangani transaksi target.",
-    addSignerFirst: "➕ Add Signer dulu",
+    addSignerFirst: "âž• Add Signer dulu",
 });
 
 
 Object.assign(TELEGRAM_PROMPT_TEXT.id, {
     addBumpPrompt: "Kirim phrase bump wallet per baris. Bot akan menampilkan public key, menyimpan ke bump.txt, lalu restart worker PM2 supaya file termuat ulang.\n\nPesan berisi phrase akan dicoba dihapus setelah diproses.",
     uploadBumpPrompt: "Upload file .txt berisi phrase bump wallet. 1 baris = 1 phrase. Bot akan merge + dedupe ke bump.txt lalu restart worker PM2.",
-    bumpAdded: "✅ Bump wallet diproses",
-    bumpDeleted: "✅ Bump wallet dihapus",
+    bumpAdded: "âœ… Bump wallet diproses",
+    bumpDeleted: "âœ… Bump wallet dihapus",
     bumpDeleteAllConfirm: "Yakin hapus semua wallet di bump.txt?",
-    bumpDeleteAllDone: "✅ Semua wallet bump dihapus: {count}",
+    bumpDeleteAllDone: "âœ… Semua wallet bump dihapus: {count}",
 });
 Object.assign(TELEGRAM_PROMPT_TEXT.en, {
     addBumpPrompt: "Send bump wallet phrases, one per line. The bot will show public keys, save them to bump.txt, then restart PM2 workers so the file is reloaded.\n\nMessages containing phrases will be deleted when possible.",
     uploadBumpPrompt: "Upload a .txt file containing bump wallet phrases. 1 line = 1 phrase. The bot will merge + dedupe into bump.txt, then restart PM2 workers.",
-    bumpAdded: "✅ Bump wallets processed",
-    bumpDeleted: "✅ Bump wallet deleted",
+    bumpAdded: "âœ… Bump wallets processed",
+    bumpDeleted: "âœ… Bump wallet deleted",
     bumpDeleteAllConfirm: "Delete all wallets in bump.txt?",
-    bumpDeleteAllDone: "✅ All bump wallets deleted: {count}",
+    bumpDeleteAllDone: "âœ… All bump wallets deleted: {count}",
 });
 Object.assign(TELEGRAM_PROMPT_TEXT.ms, {
     addBumpPrompt: "Kirim phrase wallet bump satu per baris. Bot akan papar public key, simpan ke bump.txt, lalu restart worker PM2 supaya file dimuat semula.\n\nMesej berisi phrase akan cuba dipadam selepas diproses.",
     uploadBumpPrompt: "Upload fail .txt berisi phrase wallet bump. 1 baris = 1 phrase. Bot akan merge + dedupe ke bump.txt lalu restart worker PM2.",
-    bumpAdded: "✅ Wallet bump diproses",
-    bumpDeleted: "✅ Wallet bump dipadam",
+    bumpAdded: "âœ… Wallet bump diproses",
+    bumpDeleted: "âœ… Wallet bump dipadam",
     bumpDeleteAllConfirm: "Yakin padam semua wallet dalam bump.txt?",
-    bumpDeleteAllDone: "✅ Semua wallet bump dipadam: {count}",
+    bumpDeleteAllDone: "âœ… Semua wallet bump dipadam: {count}",
 });
 
 function normalizeTelegramLanguage(value, fallback = "id") {
@@ -5122,7 +5122,7 @@ async function getCurrentTelegramLanguageBundle() {
         const language = publicTelegramLanguageSettings(settings);
         return { language, lang: getTelegramLanguageText(language.telegram_language) };
     } catch (err) {
-        const language = { telegram_language: "id", label: "🇮🇩 Indonesia", options: TELEGRAM_LANGUAGE_OPTIONS };
+        const language = { telegram_language: "id", label: "ðŸ‡®ðŸ‡© Indonesia", options: TELEGRAM_LANGUAGE_OPTIONS };
         return { language, lang: getTelegramLanguageText("id") };
     }
 }
@@ -5521,62 +5521,62 @@ function normalizeTelegramStatus(value) {
 function telegramStatusEmoji(value) {
     const normalized = normalizeTelegramStatus(value);
     const statusEmoji = {
-        active: "🟢",
-        cancelled: "🚫",
-        claimed: "✅",
-        completed: "✅",
-        deleted: "🗑️",
-        done: "✅",
-        duplicate: "🔁",
-        error: "❌",
-        executing: "🚀",
-        fail: "❌",
-        failed: "❌",
-        gagal: "❌",
-        idle: "💤",
-        invalid: "⚠️",
-        invalid_url: "⚠️",
-        locked: "🔐",
-        locked_by_funding: "🔐",
-        lose: "❌",
-        lost: "❌",
-        menang: "✅",
-        missing_public_key: "⚠️",
-        not_found: "❌",
-        not_saved: "⚠️",
-        offline: "❌",
-        ok: "✅",
-        online: "✅",
-        paused: "⏸️",
-        pending: "⏳",
-        preparing: "🛠️",
-        processing: "🔄",
-        queued: "📥",
-        running: "🔄",
-        running_batch: "🚀",
-        saved: "✅",
-        sent: "✅",
-        signer_ready: "✅",
-        signer_removed: "✅",
-        snapshot: "📌",
-        stopped: "⏹️",
-        success: "✅",
-        successful: "✅",
-        sukses: "✅",
-        true: "✅",
-        false: "❌",
-        unknown: "ℹ️",
-        waiting: "🕒",
-        waiting_protocol_26: "🕒",
-        watching: "👀",
-        win: "✅",
+        active: "ðŸŸ¢",
+        cancelled: "ðŸš«",
+        claimed: "âœ…",
+        completed: "âœ…",
+        deleted: "ðŸ—‘ï¸",
+        done: "âœ…",
+        duplicate: "ðŸ”",
+        error: "âŒ",
+        executing: "ðŸš€",
+        fail: "âŒ",
+        failed: "âŒ",
+        gagal: "âŒ",
+        idle: "ðŸ’¤",
+        invalid: "âš ï¸",
+        invalid_url: "âš ï¸",
+        locked: "ðŸ”",
+        locked_by_funding: "ðŸ”",
+        lose: "âŒ",
+        lost: "âŒ",
+        menang: "âœ…",
+        missing_public_key: "âš ï¸",
+        not_found: "âŒ",
+        not_saved: "âš ï¸",
+        offline: "âŒ",
+        ok: "âœ…",
+        online: "âœ…",
+        paused: "â¸ï¸",
+        pending: "â³",
+        preparing: "ðŸ› ï¸",
+        processing: "ðŸ”„",
+        queued: "ðŸ“¥",
+        running: "ðŸ”„",
+        running_batch: "ðŸš€",
+        saved: "âœ…",
+        sent: "âœ…",
+        signer_ready: "âœ…",
+        signer_removed: "âœ…",
+        snapshot: "ðŸ“Œ",
+        stopped: "â¹ï¸",
+        success: "âœ…",
+        successful: "âœ…",
+        sukses: "âœ…",
+        true: "âœ…",
+        false: "âŒ",
+        unknown: "â„¹ï¸",
+        waiting: "ðŸ•’",
+        waiting_protocol_26: "ðŸ•’",
+        watching: "ðŸ‘€",
+        win: "âœ…",
     };
     if (statusEmoji[normalized]) return statusEmoji[normalized];
-    if (normalized.startsWith("error_")) return "❌";
-    if (normalized.startsWith("waiting")) return "🕒";
-    if (normalized.startsWith("missing_")) return "⚠️";
-    if (normalized.startsWith("invalid_")) return "⚠️";
-    return "ℹ️";
+    if (normalized.startsWith("error_")) return "âŒ";
+    if (normalized.startsWith("waiting")) return "ðŸ•’";
+    if (normalized.startsWith("missing_")) return "âš ï¸";
+    if (normalized.startsWith("invalid_")) return "âš ï¸";
+    return "â„¹ï¸";
 }
 
 function formatTelegramStatus(value, fallback = "unknown") {
@@ -5612,11 +5612,11 @@ function buildTelegramListKeyboard({
     if (pageInfo.totalPages > 1) {
         const navRow = [];
         if (pageInfo.page > 0) {
-            navRow.push({ text: "⬅️ Prev", callback_data: `${callbackPrefix}:page:${pageInfo.page - 1}` });
+            navRow.push({ text: "â¬…ï¸ Prev", callback_data: `${callbackPrefix}:page:${pageInfo.page - 1}` });
         }
         navRow.push({ text: `${pageInfo.page + 1}/${pageInfo.totalPages}`, callback_data: "noop" });
         if (pageInfo.page < pageInfo.totalPages - 1) {
-            navRow.push({ text: "Next ➡️", callback_data: `${callbackPrefix}:page:${pageInfo.page + 1}` });
+            navRow.push({ text: "Next âž¡ï¸", callback_data: `${callbackPrefix}:page:${pageInfo.page + 1}` });
         }
         rows.push(navRow);
     }
@@ -5678,7 +5678,7 @@ function finishTelegramMultisigRun(runId) {
 function telegramMultisigRunKeyboard(runId, lang = {}) {
     return {
         inline_keyboard: [
-            [{ text: lang.stopBatch || "⛔ Stop Batch", callback_data: `multi:stop:${runId}` }],
+            [{ text: lang.stopBatch || "â›” Stop Batch", callback_data: `multi:stop:${runId}` }],
         ],
     };
 }
@@ -5746,7 +5746,7 @@ function telegramMainKeyboard(languageValue = "id") {
                 { text: lang.destination, callback_data: "menu:destinations" },
             ],
             [
-                { text: lang.bumpWallets || "🧾 Bump Wallet", callback_data: "menu:bump" },
+                { text: lang.bumpWallets || "ðŸ§¾ Bump Wallet", callback_data: "menu:bump" },
             ],
             [
                 { text: lang.botTx, callback_data: "menu:bots" },
@@ -6056,9 +6056,9 @@ async function renderTelegramHome(chatId, editQuery = null) {
         `<b>${lang.homeTitle}</b>`,
         lang.homeIntro,
         "",
-        `🌐 ${lang.languageNow}: <b>${language.label}</b>`,
+        `ðŸŒ ${lang.languageNow}: <b>${language.label}</b>`,
         `${lang.timezone}: <b>${timezone.label}</b>`,
-        `📡 Call Submit: <b>${callSubmit.submit_endpoint_mode}</b> / ${callSubmit.submit_before_ms}ms`,
+        `ðŸ“¡ Call Submit: <b>${callSubmit.submit_endpoint_mode}</b> / ${callSubmit.submit_before_ms}ms`,
         "",
         `${lang.server}: ${servers.length}`,
         `${lang.worker}: ${workers.length}`,
@@ -6111,7 +6111,7 @@ async function renderTelegramTimezone(chatId, editQuery = null) {
     const lang = getTelegramLanguageText(language.telegram_language);
     const rows = [];
     for (const zone of USER_TIMEZONE_OPTIONS) {
-        const selected = zone === timezone.user_timezone ? "✅ " : "";
+        const selected = zone === timezone.user_timezone ? "âœ… " : "";
         rows.push({ text: `${selected}${formatTimezoneOffset(zone)}`, callback_data: `set:tz:${zone}` });
     }
     const keyboardRows = [];
@@ -6136,7 +6136,7 @@ async function renderTelegramLanguage(chatId, editQuery = null) {
     const language = publicTelegramLanguageSettings(settings);
     const lang = getTelegramLanguageText(language.telegram_language);
     const rows = TELEGRAM_LANGUAGE_OPTIONS.map((option) => ([{
-        text: `${option.code === language.telegram_language ? "✅ " : ""}${option.label}`,
+        text: `${option.code === language.telegram_language ? "âœ… " : ""}${option.label}`,
         callback_data: `set:language:${option.code}`,
     }]));
     rows.push([{ text: lang.back, callback_data: "menu:settings" }]);
@@ -6296,7 +6296,7 @@ async function renderTelegramBump(chatId, editQuery = null, page = 0) {
     const pageInfo = getTelegramPage(page, bumpWallets.length, pageSize);
     const rows = bumpWallets.slice(pageInfo.start, pageInfo.end);
     const lines = [
-        `<b>${escapeTelegramHtml(lang.manageBump || "💼 Manage Bump")}</b>`,
+        `<b>${escapeTelegramHtml(lang.manageBump || "ðŸ’¼ Manage Bump")}</b>`,
         `File: <code>bump.txt</code>`,
         `Total: <b>${bumpWallets.length}</b>${bumpWallets.length ? ` | Halaman <b>${pageInfo.page + 1}/${pageInfo.totalPages}</b>` : ""}`,
         "",
@@ -6306,7 +6306,7 @@ async function renderTelegramBump(chatId, editQuery = null, page = 0) {
     } else {
         rows.forEach((wallet, index) => {
             const number = pageInfo.start + index + 1;
-            lines.push(`${number}. ${wallet.valid ? "✅" : "❌"} <code>${escapeTelegramHtml(wallet.short_public_key || "-")}</code>`);
+            lines.push(`${number}. ${wallet.valid ? "âœ…" : "âŒ"} <code>${escapeTelegramHtml(wallet.short_public_key || "-")}</code>`);
             if (!wallet.valid && wallet.error) {
                 lines.push(`   Error: ${escapeTelegramHtml(compactTelegramLogMessage(wallet.error, 60))}`);
             }
@@ -6314,14 +6314,14 @@ async function renderTelegramBump(chatId, editQuery = null, page = 0) {
     }
     const extraRows = [
         [
-            { text: lang.addBumpWallet || "➕ Add Bump", callback_data: "input:add_bump" },
-            { text: lang.uploadBumpTxt || "📤 Upload bump.txt", callback_data: "input:upload_bump" },
+            { text: lang.addBumpWallet || "âž• Add Bump", callback_data: "input:add_bump" },
+            { text: lang.uploadBumpTxt || "ðŸ“¤ Upload bump.txt", callback_data: "input:upload_bump" },
         ],
-        [{ text: lang.showBumpWallet || "👁️ Show Bump", callback_data: `bump:page:${pageInfo.page}` }],
+        [{ text: lang.showBumpWallet || "ðŸ‘ï¸ Show Bump", callback_data: `bump:page:${pageInfo.page}` }],
     ];
     if (bumpWallets.length) {
-        extraRows.push([{ text: lang.deleteAllBumpWallet || "🧹 Delete All Bump", callback_data: "bump:clear:confirm" }]);
-        const deleteButtons = rows.map((wallet, index) => ({ text: `🗑️ #${pageInfo.start + index + 1}`, callback_data: `bump:del:${wallet.index}` }));
+        extraRows.push([{ text: lang.deleteAllBumpWallet || "ðŸ§¹ Delete All Bump", callback_data: "bump:clear:confirm" }]);
+        const deleteButtons = rows.map((wallet, index) => ({ text: `ðŸ—‘ï¸ #${pageInfo.start + index + 1}`, callback_data: `bump:del:${wallet.index}` }));
         for (let index = 0; index < deleteButtons.length; index += 4) {
             extraRows.push(deleteButtons.slice(index, index + 4));
         }
@@ -6363,9 +6363,9 @@ async function renderTelegramWorkers(chatId, editQuery = null, page = 0) {
             const name = compactTelegramLogMessage(worker.name || "Worker", 28);
             const serverName = compactTelegramLogMessage(worker.server_name || lang.unassigned, 28);
             const host = formatTelegramHost(worker.server_url);
-            lines.push(`${number}. <b>${escapeTelegramHtml(name)}</b> → <b>${escapeTelegramHtml(serverName)}</b>`);
+            lines.push(`${number}. <b>${escapeTelegramHtml(name)}</b> â†’ <b>${escapeTelegramHtml(serverName)}</b>`);
             lines.push(`   Host: <code>${escapeTelegramHtml(host)}</code> | Port: <b>${escapeTelegramHtml(worker.port || worker.worker_port || "-")}</b> | PM2: <code>${escapeTelegramHtml(worker.pm2_name || normalizePm2WorkerName(worker.name))}</code>`);
-            lines.push(`   ${lang.id}: <code>${escapeTelegramHtml(formatTelegramShortId(worker.id))}</code>${worker.pm2_status === "error" ? ` | ⚠️ ${escapeTelegramHtml(compactTelegramLogMessage(worker.pm2_error || "PM2 error", 50))}` : ""}`);
+            lines.push(`   ${lang.id}: <code>${escapeTelegramHtml(formatTelegramShortId(worker.id))}</code>${worker.pm2_status === "error" ? ` | âš ï¸ ${escapeTelegramHtml(compactTelegramLogMessage(worker.pm2_error || "PM2 error", 50))}` : ""}`);
         });
     }
     const keyboard = buildTelegramListKeyboard({
@@ -6704,7 +6704,7 @@ function validateTelegramUnlockTime(text) {
 }
 
 function newBotCancelKeyboard() {
-    return { inline_keyboard: [[{ text: "❌ Batal", callback_data: "botnew:cancel" }], [{ text: "⬅️ Bot TX", callback_data: "menu:bots" }]] };
+    return { inline_keyboard: [[{ text: "âŒ Batal", callback_data: "botnew:cancel" }], [{ text: "â¬…ï¸ Bot TX", callback_data: "menu:bots" }]] };
 }
 
 async function startNewBotWizard(chatId, editQuery = null) {
@@ -6719,16 +6719,16 @@ async function renderNewBotTypePicker(chatId, editQuery = null, state = null) {
     state.step = "type";
     saveNewBotWizard(chatId, state);
     const rows = TELEGRAM_TX_TYPE_OPTIONS.map((item) => [{
-        text: `${state.data.transaction_type === item.value ? "✅ " : ""}${item.button}`,
+        text: `${state.data.transaction_type === item.value ? "âœ… " : ""}${item.button}`,
         callback_data: `botnew:type:${item.value}`,
     }]);
-    rows.push([{ text: "❌ Batal", callback_data: "botnew:cancel" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "botnew:cancel" }]);
     const text = [
-        "<b>➕ Set New Bot</b>",
+        "<b>âž• Set New Bot</b>",
         "Pilih jenis transaksi:",
-        "• Claim Only",
-        "• Send Only",
-        "• Claim & Send",
+        "â€¢ Claim Only",
+        "â€¢ Send Only",
+        "â€¢ Claim & Send",
     ].join("\n");
     const keyboard = { inline_keyboard: rows };
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
@@ -6740,7 +6740,7 @@ async function promptNewBotName(chatId, callbackQuery = null, state = null) {
     state.step = "name";
     saveNewBotWizard(chatId, state);
     const text = [
-        "<b>➕ Set New Bot</b>",
+        "<b>âž• Set New Bot</b>",
         `Type: <b>${escapeTelegramHtml(telegramTxTypeLabel(state.data.transaction_type))}</b>`,
         "",
         "Kirim <b>Name</b> bot.",
@@ -6755,11 +6755,11 @@ async function renderNewBotWorkerPicker(chatId, editQuery = null, state = null) 
     state.step = "worker";
     saveNewBotWizard(chatId, state);
     const workers = sortWorkersByName(await listWorkers());
-    const rows = [[{ text: `${state.data.auto_distribute_helpers ? "✅ " : ""}Auto Worker`, callback_data: "botnew:worker:auto" }]];
+    const rows = [[{ text: `${state.data.auto_distribute_helpers ? "âœ… " : ""}Auto Worker`, callback_data: "botnew:worker:auto" }]];
     workers.slice(0, 30).forEach((worker) => {
-        rows.push([{ text: `${state.data.worker_name === worker.name ? "✅ " : ""}${worker.name}`, callback_data: `botnew:worker:${worker.id}` }]);
+        rows.push([{ text: `${state.data.worker_name === worker.name ? "âœ… " : ""}${worker.name}`, callback_data: `botnew:worker:${worker.id}` }]);
     });
-    rows.push([{ text: "❌ Batal", callback_data: "botnew:cancel" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "botnew:cancel" }]);
     const text = [
         "<b>Worker</b>",
         `Bot: <b>${escapeTelegramHtml(state.data.bot_name)}</b>`,
@@ -6778,10 +6778,10 @@ async function renderNewBotNetworkPicker(chatId, editQuery = null, state = null)
     const keyboard = {
         inline_keyboard: [
             [
-                { text: `${state.data.network === "mainnet" ? "✅ " : ""}Mainnet`, callback_data: "botnew:network:mainnet" },
-                { text: `${state.data.network === "testnet" ? "✅ " : ""}Testnet`, callback_data: "botnew:network:testnet" },
+                { text: `${state.data.network === "mainnet" ? "âœ… " : ""}Mainnet`, callback_data: "botnew:network:mainnet" },
+                { text: `${state.data.network === "testnet" ? "âœ… " : ""}Testnet`, callback_data: "botnew:network:testnet" },
             ],
-            [{ text: "❌ Batal", callback_data: "botnew:cancel" }],
+            [{ text: "âŒ Batal", callback_data: "botnew:cancel" }],
         ],
     };
     const text = "<b>Network</b>\nPilih network untuk bot.";
@@ -6796,10 +6796,10 @@ async function renderNewBotTransactionModePicker(chatId, editQuery = null, state
     const keyboard = {
         inline_keyboard: [
             [
-                { text: `${state.data.transaction_mode === "fee_bump" ? "✅ " : ""}Bump`, callback_data: "botnew:tmode:fee_bump" },
-                { text: `${state.data.transaction_mode === "normal" ? "✅ " : ""}Normal`, callback_data: "botnew:tmode:normal" },
+                { text: `${state.data.transaction_mode === "fee_bump" ? "âœ… " : ""}Bump`, callback_data: "botnew:tmode:fee_bump" },
+                { text: `${state.data.transaction_mode === "normal" ? "âœ… " : ""}Normal`, callback_data: "botnew:tmode:normal" },
             ],
-            [{ text: "❌ Batal", callback_data: "botnew:cancel" }],
+            [{ text: "âŒ Batal", callback_data: "botnew:cancel" }],
         ],
     };
     const text = [
@@ -6816,11 +6816,11 @@ async function renderNewBotHelperPicker(chatId, editQuery = null, state = null) 
     state.step = "helpers";
     saveNewBotWizard(chatId, state);
     const buttons = TELEGRAM_HELPER_RANGE_OPTIONS.map((item) => ({
-        text: `${state.data.helper_range === item.value ? "✅ " : ""}${item.label}`,
+        text: `${state.data.helper_range === item.value ? "âœ… " : ""}${item.label}`,
         callback_data: `botnew:helpers:${item.value}`,
     }));
     const rows = chunkTelegramButtons(buttons, 2);
-    rows.push([{ text: "❌ Batal", callback_data: "botnew:cancel" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "botnew:cancel" }]);
     const text = [
         "<b>Sponsors / Helpers</b>",
         "Pilih jumlah TX atau range helper.",
@@ -6849,10 +6849,10 @@ async function renderNewBotFeePicker(chatId, editQuery = null, state = null) {
     state.step = "fee";
     saveNewBotWizard(chatId, state);
     const rows = chunkTelegramButtons(TELEGRAM_FEE_OPTIONS.map((fee) => ({
-        text: `${state.data.outer_fee === fee ? "✅ " : ""}${fee}`,
+        text: `${state.data.outer_fee === fee ? "âœ… " : ""}${fee}`,
         callback_data: `botnew:fee:${fee}`,
     })), 3);
-    rows.push([{ text: "❌ Batal", callback_data: "botnew:cancel" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "botnew:cancel" }]);
     const text = "<b>Select Max Fee</b>\nPilih fee ladder.";
     const keyboard = { inline_keyboard: rows };
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
@@ -6865,13 +6865,13 @@ async function renderNewBotFeePayerPicker(chatId, editQuery = null, state = null
     saveNewBotWizard(chatId, state);
     const wallets = await listWalletsWithBalances();
     const rows = wallets.slice(0, 30).map((wallet) => [{
-        text: `${state.data.fee_payer_id === wallet.id ? "✅ " : ""}${wallet.name || "Funding"} (${shortKey(wallet.public_key, 4)}) - ${wallet.balance_pi || "-"} PI`,
+        text: `${state.data.fee_payer_id === wallet.id ? "âœ… " : ""}${wallet.name || "Funding"} (${shortKey(wallet.public_key, 4)}) - ${wallet.balance_pi || "-"} PI`,
         callback_data: `botnew:feepayer:${wallet.id}`,
     }]);
     if (!rows.length) {
         rows.push([{ text: getTelegramLanguageText("id").addFundingFirst, callback_data: "menu:funding" }]);
     }
-    rows.push([{ text: "❌ Batal", callback_data: "botnew:cancel" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "botnew:cancel" }]);
     const text = "<b>Fee Payer Wallet</b>\nPilih funding wallet.";
     const keyboard = { inline_keyboard: rows };
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
@@ -6884,13 +6884,13 @@ async function renderNewBotDestinationPicker(chatId, editQuery = null, state = n
     saveNewBotWizard(chatId, state);
     const destinations = await listDestinations();
     const rows = destinations.slice(0, 30).map((destination) => [{
-        text: `${state.data.destination === destination.address ? "✅ " : ""}${destination.name} (${shortKey(destination.address, 4)})`,
+        text: `${state.data.destination === destination.address ? "âœ… " : ""}${destination.name} (${shortKey(destination.address, 4)})`,
         callback_data: `botnew:dest:${destination.id}`,
     }]);
     if (!rows.length) {
-        rows.push([{ text: "➕ Add Wallet Tujuan dulu", callback_data: "menu:destinations" }]);
+        rows.push([{ text: "âž• Add Wallet Tujuan dulu", callback_data: "menu:destinations" }]);
     }
-    rows.push([{ text: "❌ Batal", callback_data: "botnew:cancel" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "botnew:cancel" }]);
     const text = "<b>Destination Address</b>\nPilih wallet tujuan.";
     const keyboard = { inline_keyboard: rows };
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
@@ -6917,14 +6917,14 @@ async function renderNewBotClaimableMenu(chatId, editQuery = null, state = null)
     saveNewBotWizard(chatId, state);
     const selectedIds = getSelectedClaimableIds(state.data);
     const rows = [
-        [{ text: "🔎 Select Claimable", callback_data: "botnew:claim:fetch" }],
-        [{ text: "✍️ Manual Balance ID", callback_data: "botnew:claim:manual" }],
+        [{ text: "ðŸ”Ž Select Claimable", callback_data: "botnew:claim:fetch" }],
+        [{ text: "âœï¸ Manual Balance ID", callback_data: "botnew:claim:manual" }],
     ];
     if (selectedIds.length) {
-        rows.push([{ text: `✅ Lanjut (${selectedIds.length} selected)`, callback_data: "botnew:claim:done" }]);
-        rows.push([{ text: "🧹 Hapus Pilihan", callback_data: "botnew:claim:clear" }]);
+        rows.push([{ text: `âœ… Lanjut (${selectedIds.length} selected)`, callback_data: "botnew:claim:done" }]);
+        rows.push([{ text: "ðŸ§¹ Hapus Pilihan", callback_data: "botnew:claim:clear" }]);
     }
-    rows.push([{ text: "❌ Batal", callback_data: "botnew:cancel" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "botnew:cancel" }]);
     const autoAmount = state.data.transaction_type === "claim_and_send" ? getSelectedClaimableTotalPi(state.data) : "";
     const text = [
         "<b>Balance ID(s)</b>",
@@ -6946,21 +6946,21 @@ async function renderNewBotClaimablePicker(chatId, editQuery = null, state = nul
     const selected = new Set(Array.isArray(state.data.selected_claimable_indexes) ? state.data.selected_claimable_indexes : []);
     const rows = [];
     cache.slice(0, 30).forEach((balance, index) => {
-        const mark = selected.has(index) ? "☑" : "☐";
+        const mark = selected.has(index) ? "â˜‘" : "â˜";
         const label = `${mark} ${index + 1}. ${balance.amount || "-"} ${balance.asset || "PI"} | ${String(balance.unlock_time || "-").slice(0, 18)}`;
         rows.push([{ text: label, callback_data: `botnew:cb:${index}` }]);
     });
     if (cache.length) {
         rows.push([
-            { text: "☑ Select All", callback_data: "botnew:claim:all" },
-            { text: "🧹 Clear", callback_data: "botnew:claim:clear" },
+            { text: "â˜‘ Select All", callback_data: "botnew:claim:all" },
+            { text: "ðŸ§¹ Clear", callback_data: "botnew:claim:clear" },
         ]);
-        rows.push([{ text: `✅ Pakai Pilihan (${selected.size})`, callback_data: "botnew:claim:done" }]);
+        rows.push([{ text: `âœ… Pakai Pilihan (${selected.size})`, callback_data: "botnew:claim:done" }]);
     } else {
         rows.push([{ text: "Tidak ada claimable", callback_data: "noop" }]);
     }
-    rows.push([{ text: "✍️ Manual ID", callback_data: "botnew:claim:manual" }, { text: "⬅️ Kembali", callback_data: "botnew:claim:menu" }]);
-    rows.push([{ text: "❌ Batal", callback_data: "botnew:cancel" }]);
+    rows.push([{ text: "âœï¸ Manual ID", callback_data: "botnew:claim:manual" }, { text: "â¬…ï¸ Kembali", callback_data: "botnew:claim:menu" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "botnew:cancel" }]);
     const total = cache.reduce((sum, item) => sum + (Number.parseFloat(item.amount) || 0), 0);
     const text = [
         "<b>Select Claimable</b>",
@@ -6994,14 +6994,14 @@ async function renderNewBotUnlockPicker(chatId, editQuery = null, state = null) 
     const selectedUnlock = getUnlockTimeFromSelectedClaimables(state.data);
     const rows = [];
     if (selectedUnlock) {
-        rows.push([{ text: `🧲 Pakai Unlock Claimable (${selectedUnlock})`, callback_data: "botnew:unlock:selected" }]);
+        rows.push([{ text: `ðŸ§² Pakai Unlock Claimable (${selectedUnlock})`, callback_data: "botnew:unlock:selected" }]);
     }
     rows.push([
         { text: "+1 Menit", callback_data: "botnew:unlock:plus:60" },
         { text: "+5 Menit", callback_data: "botnew:unlock:plus:300" },
     ]);
-    rows.push([{ text: "✍️ Manual Unlock", callback_data: "botnew:unlock:manual" }]);
-    rows.push([{ text: "❌ Batal", callback_data: "botnew:cancel" }]);
+    rows.push([{ text: "âœï¸ Manual Unlock", callback_data: "botnew:unlock:manual" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "botnew:cancel" }]);
     const text = [
         "<b>Unlock Date / Time</b>",
         `Timezone bot: <b>${timezoneLabel}</b>`,
@@ -7025,6 +7025,11 @@ async function promptNewBotManualUnlock(chatId, callbackQuery = null, state = nu
     return callbackQuery ? telegramEditOrSend(callbackQuery, text, newBotCancelKeyboard()) : telegramSend(chatId, text, newBotCancelKeyboard());
 }
 
+function formatMemoChoiceLabel(customMemo) {
+    const memo = String(customMemo ?? "AUTO").trim();
+    return memo === "" ? "Tanpa Memo" : memo;
+}
+
 async function renderNewBotMemoPicker(chatId, editQuery = null, state = null) {
     state = state || getNewBotWizard(chatId);
     if (!state) return startNewBotWizard(chatId, editQuery);
@@ -7032,14 +7037,15 @@ async function renderNewBotMemoPicker(chatId, editQuery = null, state = null) {
     saveNewBotWizard(chatId, state);
     const keyboard = {
         inline_keyboard: [
-            [{ text: "✅ Auto memo", callback_data: "botnew:memo:auto" }],
-            [{ text: "✍️ Manual memo", callback_data: "botnew:memo:manual" }],
-            [{ text: "❌ Batal", callback_data: "botnew:cancel" }],
+            [{ text: "âœ… Auto memo", callback_data: "botnew:memo:auto" }],
+            [{ text: "âœï¸ Manual memo", callback_data: "botnew:memo:manual" }],
+            [{ text: "ðŸš« Tanpa Memo", callback_data: "botnew:memo:none" }],
+            [{ text: "âŒ Batal", callback_data: "botnew:cancel" }],
         ],
     };
     const text = [
-        "<b>Auto memo</b>",
-        `Saat ini: <code>${escapeTelegramHtml(state.data.custom_memo || "AUTO")}</code>`,
+        "<b>Memo</b>",
+        `Saat ini: <code>${escapeTelegramHtml(formatMemoChoiceLabel(state.data.custom_memo))}</code>`,
     ].join("\n");
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
 }
@@ -7067,10 +7073,10 @@ async function renderNewBotTopupPicker(chatId, editQuery = null, state = null) {
     const keyboard = {
         inline_keyboard: [
             [
-                { text: `${state.data.topup_helpers ? "✅ " : ""}Top Up ON`, callback_data: "botnew:topup:on" },
-                { text: `${!state.data.topup_helpers ? "✅ " : ""}Top Up OFF`, callback_data: "botnew:topup:off" },
+                { text: `${state.data.topup_helpers ? "âœ… " : ""}Top Up ON`, callback_data: "botnew:topup:on" },
+                { text: `${!state.data.topup_helpers ? "âœ… " : ""}Top Up OFF`, callback_data: "botnew:topup:off" },
             ],
-            [{ text: "❌ Batal", callback_data: "botnew:cancel" }],
+            [{ text: "âŒ Batal", callback_data: "botnew:cancel" }],
         ],
     };
     const text = [
@@ -7087,11 +7093,11 @@ async function renderNewBotTopupTargetPicker(chatId, editQuery = null, state = n
     state.step = "topup_target";
     saveNewBotWizard(chatId, state);
     const rows = chunkTelegramButtons(TELEGRAM_TOPUP_TARGET_OPTIONS.map((value) => ({
-        text: `${state.data.topup_target_balance === value ? "✅ " : ""}${value}`,
+        text: `${state.data.topup_target_balance === value ? "âœ… " : ""}${value}`,
         callback_data: `botnew:topuptarget:${value}`,
     })), 2);
-    rows.push([{ text: "✍️ Input Manual", callback_data: "botnew:topuptarget:manual" }]);
-    rows.push([{ text: "❌ Batal", callback_data: "botnew:cancel" }]);
+    rows.push([{ text: "âœï¸ Input Manual", callback_data: "botnew:topuptarget:manual" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "botnew:cancel" }]);
     const text = "<b>Top Up Target</b>\nPilih saldo kerja helper di atas native base 1 PI, atau input manual.";
     const keyboard = { inline_keyboard: rows };
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
@@ -7105,10 +7111,10 @@ async function renderNewBotSweepPicker(chatId, editQuery = null, state = null) {
     const keyboard = {
         inline_keyboard: [
             [
-                { text: `${state.data.sweep_helpers ? "✅ " : ""}Sweep ON`, callback_data: "botnew:sweep:on" },
-                { text: `${!state.data.sweep_helpers ? "✅ " : ""}Sweep OFF`, callback_data: "botnew:sweep:off" },
+                { text: `${state.data.sweep_helpers ? "âœ… " : ""}Sweep ON`, callback_data: "botnew:sweep:on" },
+                { text: `${!state.data.sweep_helpers ? "âœ… " : ""}Sweep OFF`, callback_data: "botnew:sweep:off" },
             ],
-            [{ text: "❌ Batal", callback_data: "botnew:cancel" }],
+            [{ text: "âŒ Batal", callback_data: "botnew:cancel" }],
         ],
     };
     const text = "<b>Auto Sweep Helper (1s After)</b>\nTarik sisa saldo helper setelah proses selesai.";
@@ -7133,7 +7139,7 @@ function buildNewBotPayload(data) {
         claimable_balance_id: selectedClaimableIds.length ? selectedClaimableIds.join(",") : null,
         claimable_balance_ids: selectedClaimableIds,
         transaction_type: data.transaction_type,
-        custom_memo: data.custom_memo || "AUTO",
+        custom_memo: Object.prototype.hasOwnProperty.call(data, "custom_memo") ? data.custom_memo : "AUTO",
         topup_helpers: data.transaction_mode === "normal" && Boolean(data.topup_helpers),
         topup_target_balance: data.topup_target_balance || "0.07",
         sweep_helpers: data.transaction_mode === "normal" && Boolean(data.sweep_helpers),
@@ -7171,7 +7177,7 @@ async function renderNewBotReview(chatId, editQuery = null, state = null) {
     const data = state.data;
     const selectedClaimableIds = getSelectedClaimableIds(data);
     const lines = [
-        "<b>✅ Review Set New Bot</b>",
+        "<b>âœ… Review Set New Bot</b>",
         `Type: <b>${escapeTelegramHtml(telegramTxTypeLabel(data.transaction_type))}</b>`,
         `Name: <b>${escapeTelegramHtml(data.bot_name)}</b>`,
         `Worker: <b>${escapeTelegramHtml(data.worker_label || data.worker_name || "Auto Worker")}</b>`,
@@ -7195,14 +7201,14 @@ async function renderNewBotReview(chatId, editQuery = null, state = null) {
         lines.push(`Claimable: <b>${selectedClaimableIds.length}</b> selected`);
     }
     lines.push(`Unlock: <code>${escapeTelegramHtml(data.unlock_time || "-")}</code> ${escapeTelegramHtml(formatTimezoneOffset(data.user_timezone))}`);
-    lines.push(`Memo: <code>${escapeTelegramHtml(data.custom_memo || "AUTO")}</code>`);
+    lines.push(`Memo: <code>${escapeTelegramHtml(formatMemoChoiceLabel(data.custom_memo))}</code>`);
     lines.push(`Top Up: <b>${data.transaction_mode === "normal" && data.topup_helpers ? `ON (${data.topup_target_balance})` : "OFF"}</b>`);
     lines.push(`Sweep: <b>${data.transaction_mode === "normal" && data.sweep_helpers ? "ON" : "OFF"}</b>`);
     const keyboard = {
         inline_keyboard: [
-            [{ text: "🚀 Create Bot", callback_data: "botnew:create" }],
-            [{ text: "🔁 Ulang dari awal", callback_data: "botnew:start" }],
-            [{ text: "❌ Batal", callback_data: "botnew:cancel" }],
+            [{ text: "ðŸš€ Create Bot", callback_data: "botnew:create" }],
+            [{ text: "ðŸ” Ulang dari awal", callback_data: "botnew:start" }],
+            [{ text: "âŒ Batal", callback_data: "botnew:cancel" }],
         ],
     };
     const text = lines.join("\n");
@@ -7224,7 +7230,7 @@ async function createNewBotFromWizard(chatId, callbackQuery = null, state = null
     const newBots = await addBots(botRows);
     telegramControlState.pendingInputs.delete(String(chatId));
     const text = [
-        "✅ <b>Bot TX dibuat</b>",
+        "âœ… <b>Bot TX dibuat</b>",
         `Base: <b>${escapeTelegramHtml(payload.bot_name)}</b>`,
         `Job dibuat: <b>${newBots.length}</b>`,
         newBots.length > 1 ? `Worker split: ${escapeTelegramHtml(newBots.map((bot) => `${bot.worker_name}:${bot.helper_range}`).join(" | "))}` : `Worker: ${escapeTelegramHtml(newBots[0]?.worker_name || "-")}`,
@@ -7296,7 +7302,7 @@ async function handleNewBotWizardTextInput(message, state) {
             return renderNewBotSweepPicker(chatId, null, state);
         }
     } catch (err) {
-        return telegramSend(chatId, `❌ Gagal: ${escapeTelegramHtml(err.message || err)}`, newBotCancelKeyboard());
+        return telegramSend(chatId, `âŒ Gagal: ${escapeTelegramHtml(err.message || err)}`, newBotCancelKeyboard());
     }
     return telegramSend(chatId, "Step tidak dikenal. Ketik /cancel lalu ulangi /menu.", newBotCancelKeyboard());
 }
@@ -7311,7 +7317,7 @@ async function handleNewBotWizardCallback(callbackQuery) {
     }
     if (data === "botnew:cancel") {
         telegramControlState.pendingInputs.delete(String(chatId));
-        return telegramEditOrSend(callbackQuery, "❌ Set New Bot dibatalkan.", telegramBackKeyboard("menu:bots"));
+        return telegramEditOrSend(callbackQuery, "âŒ Set New Bot dibatalkan.", telegramBackKeyboard("menu:bots"));
     }
     if (!state) {
         return startNewBotWizard(chatId, callbackQuery);
@@ -7411,7 +7417,7 @@ async function handleNewBotWizardCallback(callbackQuery) {
     }
     if (data === "botnew:claim:fetch") {
         if (!state.data.claimer_public_key) throw new Error("Passphrase belum valid");
-        await telegramEditOrSend(callbackQuery, "⏳ Mengambil claimable balance...", newBotCancelKeyboard());
+        await telegramEditOrSend(callbackQuery, "â³ Mengambil claimable balance...", newBotCancelKeyboard());
         const claimables = await fetchClaimableBalances(state.data.claimer_public_key, state.data.network || "mainnet");
         state.data.claimable_cache = claimables;
         state.data.selected_claimable_indexes = [];
@@ -7487,6 +7493,11 @@ async function handleNewBotWizardCallback(callbackQuery) {
     }
     if (data === "botnew:memo:auto") {
         state.data.custom_memo = "AUTO";
+        saveNewBotWizard(chatId, state);
+        return renderNewBotTopupPicker(chatId, callbackQuery, state);
+    }
+    if (data === "botnew:memo:none") {
+        state.data.custom_memo = "";
         saveNewBotWizard(chatId, state);
         return renderNewBotTopupPicker(chatId, callbackQuery, state);
     }
@@ -7744,7 +7755,7 @@ async function telegramSendDocumentBuffer(chatId, buffer, filename, caption = ""
 function renderLedgerSummaryText(scan, lang = {}) {
     const data = scan.data || {};
     const lines = [
-        `<b>${escapeTelegramHtml(lang.ledgerCompleteTitle || "✅ Check Ledger completed")}</b>`,
+        `<b>${escapeTelegramHtml(lang.ledgerCompleteTitle || "âœ… Check Ledger completed")}</b>`,
         `Wallet: <code>${escapeTelegramHtml(shortKey(scan.wallet, 10))}</code>`,
         `Ledger: <b>${escapeTelegramHtml(scan.ledger)} - ${escapeTelegramHtml(scan.ledgerEnd)}</b>`,
         `Total TX: <b>${escapeTelegramHtml(data.all_total_tx ?? 0)}</b>`,
@@ -7812,7 +7823,7 @@ async function runTelegramLedgerScan(chatId, wallet, ledger, ledgerEnd, autoDete
     if (autoDetect) {
         if (loading?.update) {
             await loading.update({
-                title: lang.autoDetectProgress || "⏳ Auto detect ledger dan scan data. Tunggu sampai selesai...",
+                title: lang.autoDetectProgress || "â³ Auto detect ledger dan scan data. Tunggu sampai selesai...",
                 subtitle: "Step 1/2: mendeteksi range ledger.",
                 progressRatio: 0.12,
             }).catch(() => null);
@@ -7823,8 +7834,8 @@ async function runTelegramLedgerScan(chatId, wallet, ledger, ledgerEnd, autoDete
     if (loading?.update) {
         await loading.update({
             title: autoDetect
-                ? `📡 Range ledger ditemukan: ${range.ledger}-${range.ledgerEnd}`
-                : (lang.scanLedgerProgress || "⏳ Scan ledger {range}. Tunggu sampai selesai...").replace("{range}", `${range.ledger}-${range.ledgerEnd}`),
+                ? `ðŸ“¡ Range ledger ditemukan: ${range.ledger}-${range.ledgerEnd}`
+                : (lang.scanLedgerProgress || "â³ Scan ledger {range}. Tunggu sampai selesai...").replace("{range}", `${range.ledger}-${range.ledgerEnd}`),
             subtitle: "Step 2/2: scanner sedang memproses data transaksi.",
             progressRatio: 0.35,
         }).catch(() => null);
@@ -7839,7 +7850,7 @@ async function runTelegramLedgerScan(chatId, wallet, ledger, ledgerEnd, autoDete
 
     if (loading?.update) {
         await loading.update({
-            title: "✅ Data ledger diterima. Menyiapkan hasil...",
+            title: "âœ… Data ledger diterima. Menyiapkan hasil...",
             subtitle: "Membuat ringkasan Download Excel.",
             progressRatio: 0.95,
         }).catch(() => null);
@@ -7849,9 +7860,9 @@ async function runTelegramLedgerScan(chatId, wallet, ledger, ledgerEnd, autoDete
     const scanId = saveTelegramLedgerScan(scan);
     const keyboard = {
         inline_keyboard: [
-            [{ text: lang.downloadExcelButton || "📥 Download Excel", callback_data: `ledger:excel:${scanId}` }],
-            [{ text: lang.rescanButton || "🔄 Rescan", callback_data: `ledger:rescan:${scanId}` }, { text: lang.checkAnotherButton || "🔎 Check Another", callback_data: "menu:ledger" }],
-            [{ text: lang.mainMenu || "⬅️ Main Menu", callback_data: "menu:home" }],
+            [{ text: lang.downloadExcelButton || "ðŸ“¥ Download Excel", callback_data: `ledger:excel:${scanId}` }],
+            [{ text: lang.rescanButton || "ðŸ”„ Rescan", callback_data: `ledger:rescan:${scanId}` }, { text: lang.checkAnotherButton || "ðŸ”Ž Check Another", callback_data: "menu:ledger" }],
+            [{ text: lang.mainMenu || "â¬…ï¸ Main Menu", callback_data: "menu:home" }],
         ],
     };
     const output = renderLedgerSummaryText(scan, lang);
@@ -7919,7 +7930,7 @@ async function renderTelegramFundingHistory(chatId, editQuery = null, page = 0) 
             lines.push(`   ${lang.time}: <code>${escapeTelegramHtml(formatFundingHistoryTime(createdAt, timezone.user_timezone))}</code>`);
             lines.push(`   ${lang.botGroup}: ${escapeTelegramHtml(botGroup)}`);
             lines.push(`   ${lang.workersLabel}: ${escapeTelegramHtml(workers)} | ${lang.network}: ${escapeTelegramHtml(entry.network || "-")}`);
-            lines.push(`   ${lang.balance}: <code>${escapeTelegramHtml(entry.before_pi || "-")}</code> → <code>${escapeTelegramHtml(entry.after_pi || "-")}</code>`);
+            lines.push(`   ${lang.balance}: <code>${escapeTelegramHtml(entry.before_pi || "-")}</code> â†’ <code>${escapeTelegramHtml(entry.after_pi || "-")}</code>`);
             lines.push(`   ${lang.deducted}: <b>${escapeTelegramHtml(entry.loss_pi || "0.0000000")}</b> PI | ${lang.amount}: ${escapeTelegramHtml(entry.amount || "-")}`);
         });
     }
@@ -7927,11 +7938,11 @@ async function renderTelegramFundingHistory(chatId, editQuery = null, page = 0) 
     if (pageInfo.totalPages > 1) {
         const navRow = [];
         if (pageInfo.page > 0) {
-            navRow.push({ text: lang.previousButton || "⬅️ Prev", callback_data: `funding_history:page:${pageInfo.page - 1}` });
+            navRow.push({ text: lang.previousButton || "â¬…ï¸ Prev", callback_data: `funding_history:page:${pageInfo.page - 1}` });
         }
         navRow.push({ text: `${pageInfo.page + 1}/${pageInfo.totalPages}`, callback_data: "noop" });
         if (pageInfo.page < pageInfo.totalPages - 1) {
-            navRow.push({ text: lang.nextButton || "Next ➡️", callback_data: `funding_history:page:${pageInfo.page + 1}` });
+            navRow.push({ text: lang.nextButton || "Next âž¡ï¸", callback_data: `funding_history:page:${pageInfo.page + 1}` });
         }
         keyboardRows.push(navRow);
     }
@@ -8048,15 +8059,15 @@ function buildMultisigPayload(data) {
 }
 
 function multisigCancelKeyboard() {
-    return { inline_keyboard: [[{ text: "❌ Batal", callback_data: "multi:cancel" }], [{ text: "⬅️ Multisig", callback_data: "menu:multisig" }]] };
+    return { inline_keyboard: [[{ text: "âŒ Batal", callback_data: "multi:cancel" }], [{ text: "â¬…ï¸ Multisig", callback_data: "menu:multisig" }]] };
 }
 
 function telegramLogTypeLabel(type) {
     const normalized = String(type || "info").trim().toLowerCase();
-    if (["success", "ok", "done"].includes(normalized)) return "✅ SUCCESS";
-    if (["error", "err", "failed", "fail"].includes(normalized)) return "❌ ERROR";
-    if (["warning", "warn"].includes(normalized)) return "⚠️ WARN";
-    return "ℹ️ INFO";
+    if (["success", "ok", "done"].includes(normalized)) return "âœ… SUCCESS";
+    if (["error", "err", "failed", "fail"].includes(normalized)) return "âŒ ERROR";
+    if (["warning", "warn"].includes(normalized)) return "âš ï¸ WARN";
+    return "â„¹ï¸ INFO";
 }
 
 function compactTelegramLogMessage(message, maxLength = 160) {
@@ -8087,7 +8098,7 @@ async function renderTelegramLogs(chatId, editQuery = null, page = 0) {
     const pageInfo = getTelegramPage(page, allRows.length, pageSize);
     const rows = allRows.slice(pageInfo.start, pageInfo.end);
     const lines = [
-        `<b>${escapeTelegramHtml(lang.logsTitle || "📜 Live Logs")}</b>`,
+        `<b>${escapeTelegramHtml(lang.logsTitle || "ðŸ“œ Live Logs")}</b>`,
         `Halaman: <b>${pageInfo.page + 1}/${pageInfo.totalPages}</b>${allRows.length ? ` | ${pageInfo.start + 1}-${pageInfo.end} dari ${allRows.length}` : ""}`,
         `Log terbaru ada di halaman 1. Tekan refresh untuk update.`,
         "",
@@ -8108,15 +8119,15 @@ async function renderTelegramLogs(chatId, editQuery = null, page = 0) {
     if (pageInfo.totalPages > 1) {
         const navRow = [];
         if (pageInfo.page > 0) {
-            navRow.push({ text: "⬅️ Newer", callback_data: `logs:page:${pageInfo.page - 1}` });
+            navRow.push({ text: "â¬…ï¸ Newer", callback_data: `logs:page:${pageInfo.page - 1}` });
         }
         navRow.push({ text: `${pageInfo.page + 1}/${pageInfo.totalPages}`, callback_data: "noop" });
         if (pageInfo.page < pageInfo.totalPages - 1) {
-            navRow.push({ text: "Older ➡️", callback_data: `logs:page:${pageInfo.page + 1}` });
+            navRow.push({ text: "Older âž¡ï¸", callback_data: `logs:page:${pageInfo.page + 1}` });
         }
         keyboardRows.push(navRow);
     }
-    keyboardRows.push([{ text: "🔄 Refresh Logs", callback_data: "menu:logs" }]);
+    keyboardRows.push([{ text: "ðŸ”„ Refresh Logs", callback_data: "menu:logs" }]);
     keyboardRows.push([{ text: lang.back, callback_data: "menu:home" }]);
     const keyboard = { inline_keyboard: keyboardRows };
     const text = lines.join("\n");
@@ -8138,7 +8149,7 @@ async function renderTelegramMultisig(chatId, editQuery = null) {
         `<b>${lang.multisigTitle}</b>`,
         `${lang.lockedWallet}: <b>${locked.length}</b>`,
         `${lang.savedWalletList}: <b>${savedWallets.length}</b>`,
-        `${lang.signerWallet || "✍️ Signer Wallet"}: <b>${signers.length}</b>`,
+        `${lang.signerWallet || "âœï¸ Signer Wallet"}: <b>${signers.length}</b>`,
         `${lang.pendingLock}: <b>${pending.length}</b>`,
         `Signer Watch: <b>${escapeTelegramHtml(formatTelegramStatus(signerWatch.status || "idle"))}</b>${signerWatch.test_public_key ? ` | Test: <code>${escapeTelegramHtml(shortKey(signerWatch.test_public_key, 6))}</code>` : ""}`,
         `${lang.defaultTimezone}: <b>${timezone.label}</b>`,
@@ -8148,10 +8159,10 @@ async function renderTelegramMultisig(chatId, editQuery = null) {
     const keyboard = {
         inline_keyboard: [
             [{ text: lang.runSetMode, callback_data: "multi:start" }],
-            [{ text: lang.addSigner || "➕ Add Signer", callback_data: "multi:add_signer" }, { text: lang.manageSigners || "✍️ Signer Wallets", callback_data: "multi:signers" }],
+            [{ text: lang.addSigner || "âž• Add Signer", callback_data: "multi:add_signer" }, { text: lang.manageSigners || "âœï¸ Signer Wallets", callback_data: "multi:signers" }],
             [{ text: lang.saveWalletList, callback_data: "multi:save_wallets" }, { text: lang.runSavedBatch, callback_data: "multi:run_saved" }],
-            [{ text: lang.setSignerTestWallet || "🧪 Set Test Wallet", callback_data: "multi:watch:set_test" }, { text: lang.watchSignerAutoInstall || "🔁 Watch Signer Auto Install", callback_data: "multi:watch:start" }],
-            ...(["watching", "running_batch", "signer_ready"].includes(String(signerWatch.status || "")) ? [[{ text: lang.stopBatchInstallLock || "⛔ Stop Batch Install Lock", callback_data: "multi:watch:stop" }]] : []),
+            [{ text: lang.setSignerTestWallet || "ðŸ§ª Set Test Wallet", callback_data: "multi:watch:set_test" }, { text: lang.watchSignerAutoInstall || "ðŸ” Watch Signer Auto Install", callback_data: "multi:watch:start" }],
+            ...(["watching", "running_batch", "signer_ready"].includes(String(signerWatch.status || "")) ? [[{ text: lang.stopBatchInstallLock || "â›” Stop Batch Install Lock", callback_data: "multi:watch:stop" }]] : []),
             [{ text: lang.manageSavedWallets, callback_data: "multi:saved_wallets" }],
             [{ text: lang.withdrawAllAssets, callback_data: "multi:start:claim_and_send" }, { text: lang.sweepAll, callback_data: "multi:start:sweep_all" }],
             [{ text: lang.removeAllSigner, callback_data: "multi:start:remove_signer" }],
@@ -8201,11 +8212,11 @@ async function renderMultisigModePicker(chatId, editQuery = null, state = null) 
     state.step = "mode";
     saveMultisigWizard(chatId, state);
     const rows = TELEGRAM_MULTISIG_MODE_OPTIONS.map((item) => [{
-        text: `${state.data.mode === item.value ? "✅ " : ""}${item.button}`,
+        text: `${state.data.mode === item.value ? "âœ… " : ""}${item.button}`,
         callback_data: `multi:mode:${item.value}`,
     }]);
-    rows.push([{ text: "❌ Batal", callback_data: "multi:cancel" }]);
-    const text = "<b>🔐 Multisig Mode</b>\nPilih mode yang ingin dijalankan.";
+    rows.push([{ text: "âŒ Batal", callback_data: "multi:cancel" }]);
+    const text = "<b>ðŸ” Multisig Mode</b>\nPilih mode yang ingin dijalankan.";
     return editQuery ? telegramEditOrSend(editQuery, text, { inline_keyboard: rows }) : telegramSend(chatId, text, { inline_keyboard: rows });
 }
 
@@ -8215,8 +8226,8 @@ async function renderMultisigNetworkPicker(chatId, editQuery = null, state = nul
     state.step = "network";
     saveMultisigWizard(chatId, state);
     const keyboard = { inline_keyboard: [
-        [{ text: `${state.data.network === "testnet" ? "✅ " : ""}Testnet`, callback_data: "multi:network:testnet" }, { text: `${state.data.network === "mainnet" ? "✅ " : ""}Mainnet`, callback_data: "multi:network:mainnet" }],
-        [{ text: "❌ Batal", callback_data: "multi:cancel" }],
+        [{ text: `${state.data.network === "testnet" ? "âœ… " : ""}Testnet`, callback_data: "multi:network:testnet" }, { text: `${state.data.network === "mainnet" ? "âœ… " : ""}Mainnet`, callback_data: "multi:network:mainnet" }],
+        [{ text: "âŒ Batal", callback_data: "multi:cancel" }],
     ] };
     const text = `<b>Network</b>\nMode: <b>${escapeTelegramHtml(multisigModeLabel(state.data.mode))}</b>`;
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
@@ -8228,10 +8239,10 @@ async function renderMultisigHorizonPicker(chatId, editQuery = null, state = nul
     state.step = "horizon";
     saveMultisigWizard(chatId, state);
     const servers = await listServersWithStats().catch(() => []);
-    const rows = [[{ text: `${!state.data.horizon_server_id && !state.data.horizon_url ? "✅ " : ""}Auto default + backup`, callback_data: "multi:horizon:auto" }]];
-    servers.slice(0, 20).forEach((server) => rows.push([{ text: `${state.data.horizon_server_id === server.id ? "✅ " : ""}${server.name || "Server"} (${getServerHost(server.url)})`, callback_data: `multi:horizon:server:${server.id}` }]));
-    rows.push([{ text: "✍️ Manual Horizon URL", callback_data: "multi:horizon:manual" }]);
-    rows.push([{ text: "❌ Batal", callback_data: "multi:cancel" }]);
+    const rows = [[{ text: `${!state.data.horizon_server_id && !state.data.horizon_url ? "âœ… " : ""}Auto default + backup`, callback_data: "multi:horizon:auto" }]];
+    servers.slice(0, 20).forEach((server) => rows.push([{ text: `${state.data.horizon_server_id === server.id ? "âœ… " : ""}${server.name || "Server"} (${getServerHost(server.url)})`, callback_data: `multi:horizon:server:${server.id}` }]));
+    rows.push([{ text: "âœï¸ Manual Horizon URL", callback_data: "multi:horizon:manual" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "multi:cancel" }]);
     const text = "<b>Horizon URL</b>\nPilih server dari Manage Servers, auto, atau input manual.";
     return editQuery ? telegramEditOrSend(editQuery, text, { inline_keyboard: rows }) : telegramSend(chatId, text, { inline_keyboard: rows });
 }
@@ -8250,9 +8261,9 @@ async function renderMultisigBaseFeePicker(chatId, editQuery = null, state = nul
     if (!state) return startMultisigWizard(chatId, editQuery);
     state.step = "base_fee";
     saveMultisigWizard(chatId, state);
-    const rows = chunkTelegramButtons(TELEGRAM_MULTISIG_BASE_FEE_OPTIONS.map((fee) => ({ text: `${state.data.base_fee_stroops === fee ? "✅ " : ""}${fee}`, callback_data: `multi:basefee:${fee}` })), 2);
-    rows.push([{ text: "✍️ Manual Base Fee", callback_data: "multi:basefee:manual" }]);
-    rows.push([{ text: "❌ Batal", callback_data: "multi:cancel" }]);
+    const rows = chunkTelegramButtons(TELEGRAM_MULTISIG_BASE_FEE_OPTIONS.map((fee) => ({ text: `${state.data.base_fee_stroops === fee ? "âœ… " : ""}${fee}`, callback_data: `multi:basefee:${fee}` })), 2);
+    rows.push([{ text: "âœï¸ Manual Base Fee", callback_data: "multi:basefee:manual" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "multi:cancel" }]);
     const text = "<b>Base Fee Stroops</b>\nPilih base fee untuk transaksi multisig.";
     return editQuery ? telegramEditOrSend(editQuery, text, { inline_keyboard: rows }) : telegramSend(chatId, text, { inline_keyboard: rows });
 }
@@ -8262,9 +8273,9 @@ async function renderMultisigDelayPicker(chatId, editQuery = null, state = null)
     if (!state) return startMultisigWizard(chatId, editQuery);
     state.step = "delay";
     saveMultisigWizard(chatId, state);
-    const rows = chunkTelegramButtons(TELEGRAM_MULTISIG_DELAY_OPTIONS.map((ms) => ({ text: `${String(state.data.batch_delay_ms) === String(ms) ? "✅ " : ""}${Math.round(Number(ms) / 1000)} detik`, callback_data: `multi:delay:${ms}` })), 2);
-    rows.push([{ text: "✍️ Manual Delay", callback_data: "multi:delay:manual" }]);
-    rows.push([{ text: "❌ Batal", callback_data: "multi:cancel" }]);
+    const rows = chunkTelegramButtons(TELEGRAM_MULTISIG_DELAY_OPTIONS.map((ms) => ({ text: `${String(state.data.batch_delay_ms) === String(ms) ? "âœ… " : ""}${Math.round(Number(ms) / 1000)} detik`, callback_data: `multi:delay:${ms}` })), 2);
+    rows.push([{ text: "âœï¸ Manual Delay", callback_data: "multi:delay:manual" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "multi:cancel" }]);
     const text = "<b>Delay Antar Batch</b>\nDipakai setelah setiap batch 15 target.";
     return editQuery ? telegramEditOrSend(editQuery, text, { inline_keyboard: rows }) : telegramSend(chatId, text, { inline_keyboard: rows });
 }
@@ -8276,12 +8287,12 @@ async function renderMultisigFundingPicker(chatId, editQuery = null, state = nul
     saveMultisigWizard(chatId, state);
     const wallets = await listWalletsWithBalances();
     const rows = wallets.slice(0, 30).map((wallet) => [{
-        text: `${state.data.fee_payer_id === wallet.id ? "✅ " : ""}${wallet.name || "Funding"} (${shortKey(wallet.public_key, 4)}) - ${wallet.balance_pi || "-"} PI`,
+        text: `${state.data.fee_payer_id === wallet.id ? "âœ… " : ""}${wallet.name || "Funding"} (${shortKey(wallet.public_key, 4)}) - ${wallet.balance_pi || "-"} PI`,
         callback_data: `multi:funding:${wallet.id}`,
     }]);
     if (!rows.length) rows.push([{ text: getTelegramLanguageText("id").addFundingFirst, callback_data: "menu:funding" }]);
-    rows.push([{ text: "❌ Batal", callback_data: "multi:cancel" }]);
-    const text = "<b>💸 Funding Wallet</b>\nPilih funding wallet untuk bayar fee / fee bump saja.";
+    rows.push([{ text: "âŒ Batal", callback_data: "multi:cancel" }]);
+    const text = "<b>ðŸ’¸ Funding Wallet</b>\nPilih funding wallet untuk bayar fee / fee bump saja.";
     return editQuery ? telegramEditOrSend(editQuery, text, { inline_keyboard: rows }) : telegramSend(chatId, text, { inline_keyboard: rows });
 }
 
@@ -8294,17 +8305,17 @@ async function renderMultisigSignerPicker(chatId, editQuery = null, state = null
     saveMultisigWizard(chatId, state);
     const signers = await listMultisigSigners();
     const rows = signers.slice(0, 30).map((signer) => [{
-        text: `${state.data.signer_id === signer.id ? "✅ " : ""}${signer.name || "Signer"} (${shortKey(signer.public_key, 4)})`,
+        text: `${state.data.signer_id === signer.id ? "âœ… " : ""}${signer.name || "Signer"} (${shortKey(signer.public_key, 4)})`,
         callback_data: `multi:signer:${signer.id}`,
     }]);
     if (!rows.length) {
-        rows.push([{ text: tgLang.addSignerFirst || "➕ Add Signer first", callback_data: "multi:add_signer" }]);
+        rows.push([{ text: tgLang.addSignerFirst || "âž• Add Signer first", callback_data: "multi:add_signer" }]);
     } else {
-        rows.push([{ text: tgLang.addSigner || "➕ Add Signer", callback_data: "multi:add_signer" }]);
+        rows.push([{ text: tgLang.addSigner || "âž• Add Signer", callback_data: "multi:add_signer" }]);
     }
-    rows.push([{ text: "❌ Batal", callback_data: "multi:cancel" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "multi:cancel" }]);
     const text = [
-        `<b>${escapeTelegramHtml(tgLang.chooseSignerTitle || "✍️ Choose Signer Wallet")}</b>`,
+        `<b>${escapeTelegramHtml(tgLang.chooseSignerTitle || "âœï¸ Choose Signer Wallet")}</b>`,
         escapeTelegramHtml(tgLang.chooseSignerPrompt || "Funding only pays fee. Signer signs target transactions."),
     ].join("\n");
     return editQuery ? telegramEditOrSend(editQuery, text, { inline_keyboard: rows }) : telegramSend(chatId, text, { inline_keyboard: rows });
@@ -8340,7 +8351,7 @@ async function handleMultisigAddSignerInput(message, pending = null) {
         if (targetInput.source === "file") {
             await telegramSend(chatId, formatTelegramLangText(tgLang.targetFileReceived, { filename: escapeTelegramHtml(targetInput.filename), count: lines.length, kind: tgLang.phraseKind || "phrases" }), multisigCancelKeyboard());
         }
-        const notice = `${tgLang.signerAdded || "✅ Signer Wallet added"}\nTotal: <b>${result.total}</b> | New: <b>${result.added}</b> | Updated: <b>${result.updated}</b> | Failed: <b>${result.failed}</b>`;
+        const notice = `${tgLang.signerAdded || "âœ… Signer Wallet added"}\nTotal: <b>${result.total}</b> | New: <b>${result.added}</b> | Updated: <b>${result.updated}</b> | Failed: <b>${result.failed}</b>`;
         if (pending?.data?.return_to_signer_picker && pending?.data?.wizard_state) {
             const wizardState = pending.data.wizard_state;
             saveMultisigWizard(chatId, wizardState);
@@ -8349,7 +8360,7 @@ async function handleMultisigAddSignerInput(message, pending = null) {
         }
         return renderMultisigSignerList(chatId, null, notice);
     } catch (err) {
-        return telegramSend(chatId, `❌ ${escapeTelegramHtml(err.message || err)}`, multisigCancelKeyboard());
+        return telegramSend(chatId, `âŒ ${escapeTelegramHtml(err.message || err)}`, multisigCancelKeyboard());
     }
 }
 
@@ -8357,7 +8368,7 @@ async function renderMultisigSignerList(chatId, callbackQuery = null, notice = "
     const { lang: tgLang } = await getCurrentTelegramLanguageBundle();
     const allRows = await listMultisigSigners();
     const rows = allRows.slice(0, 15);
-    const lines = [`<b>${escapeTelegramHtml(tgLang.manageSigners || "✍️ Signer Wallets")}</b>`];
+    const lines = [`<b>${escapeTelegramHtml(tgLang.manageSigners || "âœï¸ Signer Wallets")}</b>`];
     if (notice) {
         lines.push(`<b>${notice}</b>`, "");
     }
@@ -8368,15 +8379,15 @@ async function renderMultisigSignerList(chatId, callbackQuery = null, notice = "
     } else {
         rows.forEach((row, index) => {
             lines.push(`${index + 1}. <b>${escapeTelegramHtml(row.name || "Signer")}</b> | <code>${escapeTelegramHtml(shortKey(row.public_key, 8))}</code> | ${escapeTelegramHtml(formatTelegramStatus(row.status || "active"))}`);
-            buttons.push([{ text: `🗑️ ${shortKey(row.public_key, 6)}`, callback_data: `multi:signer:del:${multisigSignerDeleteHash(row)}` }]);
+            buttons.push([{ text: `ðŸ—‘ï¸ ${shortKey(row.public_key, 6)}`, callback_data: `multi:signer:del:${multisigSignerDeleteHash(row)}` }]);
         });
         if (allRows.length > rows.length) {
             lines.push(`...dan ${allRows.length - rows.length} signer lain.`);
         }
     }
-    buttons.unshift([{ text: tgLang.addSigner || "➕ Add Signer", callback_data: "multi:add_signer" }]);
+    buttons.unshift([{ text: tgLang.addSigner || "âž• Add Signer", callback_data: "multi:add_signer" }]);
     if (rows.length) {
-        buttons.push([{ text: tgLang.deleteSigner || "🗑️ Delete Signer", callback_data: "multi:signers:delete_all_confirm" }]);
+        buttons.push([{ text: tgLang.deleteSigner || "ðŸ—‘ï¸ Delete Signer", callback_data: "multi:signers:delete_all_confirm" }]);
     }
     buttons.push([{ text: tgLang.back, callback_data: "menu:multisig" }]);
     const keyboard = { inline_keyboard: buttons };
@@ -8406,9 +8417,9 @@ async function renderMultisigTargetMode(chatId, editQuery = null, state = null) 
     state.step = "target_mode";
     saveMultisigWizard(chatId, state);
     const keyboard = { inline_keyboard: [
-        [{ text: "✅ Pakai semua locked wallet tersimpan", callback_data: "multi:targets:all" }],
-        [{ text: "✍️ Input public key target", callback_data: "multi:targets:manual" }],
-        [{ text: "❌ Batal", callback_data: "multi:cancel" }],
+        [{ text: "âœ… Pakai semua locked wallet tersimpan", callback_data: "multi:targets:all" }],
+        [{ text: "âœï¸ Input public key target", callback_data: "multi:targets:manual" }],
+        [{ text: "âŒ Batal", callback_data: "multi:cancel" }],
     ] };
     const text = "<b>Targets</b>\nKosong/all = semua locked wallet yang tersimpan untuk kombinasi Funding + Signer ini.";
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
@@ -8429,9 +8440,9 @@ async function renderMultisigThresholdPicker(chatId, editQuery = null, state = n
     if (!state) return startMultisigWizard(chatId, editQuery);
     state.step = "threshold";
     saveMultisigWizard(chatId, state);
-    const rows = [["5", "10"], ["20", "50"]].map((pair) => pair.map((value) => ({ text: `${Number(state.data.threshold) === Number(value) ? "✅ " : ""}${value}`, callback_data: `multi:threshold:${value}` })));
-    rows.push([{ text: "✍️ Manual Threshold", callback_data: "multi:threshold:manual" }]);
-    rows.push([{ text: "❌ Batal", callback_data: "multi:cancel" }]);
+    const rows = [["5", "10"], ["20", "50"]].map((pair) => pair.map((value) => ({ text: `${Number(state.data.threshold) === Number(value) ? "âœ… " : ""}${value}`, callback_data: `multi:threshold:${value}` })));
+    rows.push([{ text: "âœï¸ Manual Threshold", callback_data: "multi:threshold:manual" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "multi:cancel" }]);
     const text = "<b>Threshold / Signer Weight</b>\nInstall Lock memakai master weight 0 dan signer weight = threshold.";
     return editQuery ? telegramEditOrSend(editQuery, text, { inline_keyboard: rows }) : telegramSend(chatId, text, { inline_keyboard: rows });
 }
@@ -8444,9 +8455,9 @@ async function renderMultisigReservePicker(chatId, editQuery = null, state = nul
     }
     state.step = "reserve";
     saveMultisigWizard(chatId, state);
-    const rows = chunkTelegramButtons(TELEGRAM_MULTISIG_RESERVE_OPTIONS.map((value) => ({ text: `${state.data.reserve_pi === value ? "✅ " : ""}${value} PI`, callback_data: `multi:reserve:${value}` })), 3);
-    rows.push([{ text: "✍️ Manual Reserve", callback_data: "multi:reserve:manual" }]);
-    rows.push([{ text: "❌ Batal", callback_data: "multi:cancel" }]);
+    const rows = chunkTelegramButtons(TELEGRAM_MULTISIG_RESERVE_OPTIONS.map((value) => ({ text: `${state.data.reserve_pi === value ? "âœ… " : ""}${value} PI`, callback_data: `multi:reserve:${value}` })), 3);
+    rows.push([{ text: "âœï¸ Manual Reserve", callback_data: "multi:reserve:manual" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "multi:cancel" }]);
     const text = state.data.mode === "install_lock"
         ? "<b>Fund Target PI</b>\nJumlah PI yang dikirim dari funding ke setiap target sebelum Set Options. Default 0.5 PI untuk bantu reserve signer."
         : "<b>Reserve PI</b>\nUntuk Send/Claim+Send, sistem memakai reserve terbesar antara manual dan minimum reserve akun.";
@@ -8463,11 +8474,11 @@ async function renderMultisigDestinationPicker(chatId, editQuery = null, state =
     saveMultisigWizard(chatId, state);
     const destinations = await listDestinations();
     const rows = destinations.slice(0, 30).map((destination) => [{
-        text: `${state.data.destination === destination.address ? "✅ " : ""}${destination.name} (${shortKey(destination.address, 4)})`,
+        text: `${state.data.destination === destination.address ? "âœ… " : ""}${destination.name} (${shortKey(destination.address, 4)})`,
         callback_data: `multi:dest:${destination.id}`,
     }]);
-    rows.push([{ text: "✍️ Input Manual Address", callback_data: "multi:dest:manual" }]);
-    rows.push([{ text: "❌ Batal", callback_data: "multi:cancel" }]);
+    rows.push([{ text: "âœï¸ Input Manual Address", callback_data: "multi:dest:manual" }]);
+    rows.push([{ text: "âŒ Batal", callback_data: "multi:cancel" }]);
     const text = "<b>Destination Address</b>\nPilih wallet tujuan atau input manual.";
     return editQuery ? telegramEditOrSend(editQuery, text, { inline_keyboard: rows }) : telegramSend(chatId, text, { inline_keyboard: rows });
 }
@@ -8486,9 +8497,9 @@ async function renderMultisigAmountPicker(chatId, editQuery = null, state = null
     state.step = "amount";
     saveMultisigWizard(chatId, state);
     const keyboard = { inline_keyboard: [
-        [{ text: `${String(state.data.amount).toUpperCase() === "ALL" ? "✅ " : ""}ALL / semua setelah reserve`, callback_data: "multi:amount:ALL" }],
-        [{ text: "✍️ Input Amount Manual", callback_data: "multi:amount:manual" }],
-        [{ text: "❌ Batal", callback_data: "multi:cancel" }],
+        [{ text: `${String(state.data.amount).toUpperCase() === "ALL" ? "âœ… " : ""}ALL / semua setelah reserve`, callback_data: "multi:amount:ALL" }],
+        [{ text: "âœï¸ Input Amount Manual", callback_data: "multi:amount:manual" }],
+        [{ text: "âŒ Batal", callback_data: "multi:cancel" }],
     ] };
     const text = "<b>Amount</b>\nKosong/ALL = kirim semua saldo setelah reserve.";
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
@@ -8518,7 +8529,7 @@ async function renderMultisigReview(chatId, editQuery = null, state = null) {
         ).length;
     }
     const lines = [
-        "<b>✅ Review Multisig</b>",
+        "<b>âœ… Review Multisig</b>",
         `Mode: <b>${escapeTelegramHtml(multisigModeLabel(data.mode))}</b>`,
         `Network: <b>${escapeTelegramHtml(data.network)}</b>`,
         `Horizon: ${escapeTelegramHtml(data.horizon_label || "Auto")}`,
@@ -8533,15 +8544,15 @@ async function renderMultisigReview(chatId, editQuery = null, state = null) {
     if (multisigNeedsDestination(data.mode)) lines.push(`Destination: <b>${escapeTelegramHtml(data.destination_label || shortKey(data.destination, 8))}</b>`);
     if (multisigNeedsAmount(data.mode)) lines.push(`Amount: <b>${escapeTelegramHtml(data.amount || "ALL")}</b>`);
     const runText = data.watch_signer_auto
-        ? "🔁 Start Watch Signer Auto Install"
-        : (data.mode === "install_lock" && data.target_source === "saved_list" ? "🚀 Run Saved Batch" : (data.mode === "install_lock" ? "🚀 Run / Save & Wait Protocol 26" : "🚀 Run Mode"));
-    const keyboardRows = [[{ text: "👁️ Preview Targets", callback_data: "multi:preview" }]];
+        ? "ðŸ” Start Watch Signer Auto Install"
+        : (data.mode === "install_lock" && data.target_source === "saved_list" ? "ðŸš€ Run Saved Batch" : (data.mode === "install_lock" ? "ðŸš€ Run / Save & Wait Protocol 26" : "ðŸš€ Run Mode"));
+    const keyboardRows = [[{ text: "ðŸ‘ï¸ Preview Targets", callback_data: "multi:preview" }]];
     if (data.mode === "install_lock" && data.target_source !== "saved_list") {
         const { lang: tgLang } = await getCurrentTelegramLanguageBundle();
         keyboardRows.push([{ text: tgLang.saveOnlyButton, callback_data: "multi:save_targets" }]);
     }
     keyboardRows.push([{ text: runText, callback_data: data.watch_signer_auto ? "multi:watch:run" : "multi:run" }]);
-    keyboardRows.push([{ text: "🔁 Ulang", callback_data: "multi:start" }, { text: "❌ Batal", callback_data: "multi:cancel" }]);
+    keyboardRows.push([{ text: "ðŸ” Ulang", callback_data: "multi:start" }, { text: "âŒ Batal", callback_data: "multi:cancel" }]);
     const keyboard = { inline_keyboard: keyboardRows };
     const text = lines.join("\n");
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
@@ -8549,7 +8560,7 @@ async function renderMultisigReview(chatId, editQuery = null, state = null) {
 
 function renderMultisigResultText(result, title = "Multisig selesai") {
     const lines = [
-        `✅ <b>${escapeTelegramHtml(title)}</b>`,
+        `âœ… <b>${escapeTelegramHtml(title)}</b>`,
         `Mode: <b>${escapeTelegramHtml(multisigModeLabel(result.mode || "install_lock"))}</b>`,
         `Network: <b>${escapeTelegramHtml(result.network || "-")}</b>`,
         `Total: <b>${escapeTelegramHtml(result.total ?? 0)}</b> | Berhasil: <b>${escapeTelegramHtml(result.success_count ?? 0)}</b>`,
@@ -8568,7 +8579,7 @@ function renderMultisigResultText(result, title = "Multisig selesai") {
     if (rows.length) {
         lines.push("", "<b>Result</b>");
         rows.forEach((row, index) => {
-            lines.push(`${index + 1}. ${row.success ? "✅" : row.queued ? "⏳" : "❌"} <code>${escapeTelegramHtml(shortKey(row.public_key || row.wallet || "-", 8))}</code>`);
+            lines.push(`${index + 1}. ${row.success ? "âœ…" : row.queued ? "â³" : "âŒ"} <code>${escapeTelegramHtml(shortKey(row.public_key || row.wallet || "-", 8))}</code>`);
             if (row.hash) lines.push(`   Hash: <code>${escapeTelegramHtml(shortKey(row.hash, 10))}</code>`);
             if (row.fund_pi) lines.push(`   Fund Target: ${escapeTelegramHtml(row.fund_pi)} PI`);
             if (row.claims !== undefined || row.sent_pi !== undefined) lines.push(`   Claims: ${escapeTelegramHtml(row.claims ?? 0)} | Sent: ${escapeTelegramHtml(row.sent_pi || "0.0000000")} PI`);
@@ -8602,7 +8613,7 @@ async function saveMultisigWizardTargets(chatId, callbackQuery = null, state = n
         chatId,
         callbackQuery,
         lang: tgLang,
-        title: tgLang.loadingSavedWallets || "⏳ Saving the Saved Wallet List...",
+        title: tgLang.loadingSavedWallets || "â³ Saving the Saved Wallet List...",
         subtitle: tgLang.loadingKeepOpen,
         keyboard: multisigCancelKeyboard(),
         estimateMs: Math.min(30000, Math.max(5000, lines.length * 120)),
@@ -8611,13 +8622,13 @@ async function saveMultisigWizardTargets(chatId, callbackQuery = null, state = n
         const result = await saveMultisigSavedWalletPhrases(lines.join("\n"));
         telegramControlState.pendingInputs.delete(String(chatId));
         const finalText = [
-            `<b>${escapeTelegramHtml(tgLang.savedWalletSavingDone || "✅ Saved Wallet List saved successfully")}</b>`,
+            `<b>${escapeTelegramHtml(tgLang.savedWalletSavingDone || "âœ… Saved Wallet List saved successfully")}</b>`,
             "",
             formatTelegramLangText(tgLang.savedWalletDone, result),
         ].join("\n");
         return await loading.stop(finalText, telegramBackKeyboard("menu:multisig"));
     } catch (err) {
-        await loading.stop(`❌ ${escapeTelegramHtml(err.message || err)}`, telegramBackKeyboard("menu:multisig"));
+        await loading.stop(`âŒ ${escapeTelegramHtml(err.message || err)}`, telegramBackKeyboard("menu:multisig"));
         throw err;
     }
 }
@@ -8635,12 +8646,12 @@ function renderMultisigRunProgressText(progress = {}, lang = {}, isSavedList = f
     if (stage === "batch_done") title = formatTelegramLangText(lang.multisigRunBatchDone, { batch_no: batchNo, batch_count: batchCount });
     if (stage === "delay") title = lang.multisigRunDelay;
     if (stage === "completed") title = lang.multisigRunCompleted;
-    if (stage === "stopped") title = lang.multisigRunStopped || "🛑 Batch dihentikan oleh admin.";
+    if (stage === "stopped") title = lang.multisigRunStopped || "ðŸ›‘ Batch dihentikan oleh admin.";
 
     const total = progress.total ?? 0;
     const processed = progress.processed ?? ((progress.success || 0) + (progress.failed || 0));
     const lines = [
-        `<b>${escapeTelegramHtml(title || "⏳ Processing...")}</b>`,
+        `<b>${escapeTelegramHtml(title || "â³ Processing...")}</b>`,
         `${escapeTelegramHtml(lang.progressSource || "Source")}: <b>${escapeTelegramHtml(isSavedList ? (lang.savedWalletList || "Saved Wallet List") : "Manual Targets")}</b>`,
     ];
     if (total) {
@@ -8696,7 +8707,7 @@ async function runMultisigWizard(chatId, callbackQuery = null, state = null) {
     let lastProgressText = "";
     let lastProgressEditAt = 0;
     const progressKeyboard = () => telegramMultisigRunKeyboard(runControl.id, tgLang);
-    const cleanLoadingTitle = (value) => String(value || "⏳ Menjalankan Multisig...").replace(/<[^>]+>/g, "").trim();
+    const cleanLoadingTitle = (value) => String(value || "â³ Menjalankan Multisig...").replace(/<[^>]+>/g, "").trim();
     const progressRatioFromState = (progress = {}) => {
         const total = Number(progress.total || 0);
         if (!total) return null;
@@ -8748,7 +8759,7 @@ async function runMultisigWizard(chatId, callbackQuery = null, state = null) {
             chatId,
             callbackQuery,
             lang: tgLang,
-            title: tgLang.multisigRunStarting || "⏳ Menjalankan Multisig...",
+            title: tgLang.multisigRunStarting || "â³ Menjalankan Multisig...",
             subtitle: tgLang.loadingKeepOpen,
             keyboard: progressKeyboard(),
             estimateMs: 0,
@@ -8777,7 +8788,7 @@ async function runMultisigWizard(chatId, callbackQuery = null, state = null) {
         }
         return telegramSend(chatId, finalText, telegramBackKeyboard("menu:multisig"));
     } catch (err) {
-        const errorText = `❌ <b>Multisig gagal</b>\n${escapeTelegramHtml(err.message || err)}`;
+        const errorText = `âŒ <b>Multisig gagal</b>\n${escapeTelegramHtml(err.message || err)}`;
         if (loading) {
             return loading.stop(errorText, telegramBackKeyboard("menu:multisig"));
         }
@@ -8792,10 +8803,10 @@ async function previewMultisigWizard(chatId, callbackQuery = null, state = null)
     if (!state) return startMultisigWizard(chatId, callbackQuery);
     state = await applySavedWalletTargetsToMultisigState(state);
     const payload = buildMultisigPayload(state.data);
-    await telegramEditOrSend(callbackQuery, "⏳ Preview targets multisig...", multisigCancelKeyboard());
+    await telegramEditOrSend(callbackQuery, "â³ Preview targets multisig...", multisigCancelKeyboard());
     const preview = await previewMultisigTargets(payload);
     const lines = [
-        "<b>👁️ Preview Multisig Targets</b>",
+        "<b>ðŸ‘ï¸ Preview Multisig Targets</b>",
         `Mode: <b>${escapeTelegramHtml(multisigModeLabel(preview.mode))}</b>`,
         `Funding: <code>${escapeTelegramHtml(shortKey(preview.funding_public_key, 8))}</code>`,
         `Total: <b>${preview.total}</b> | Valid: <b>${preview.success_count}</b>`,
@@ -8804,10 +8815,10 @@ async function previewMultisigWizard(chatId, callbackQuery = null, state = null)
     ].filter(Boolean);
     (preview.results || []).slice(0, 20).forEach((row, index) => {
         const previewStatus = row.saved_status ? formatTelegramStatus(row.saved_status) : compactTelegramLogMessage(row.error || "-", 80);
-        lines.push(`${index + 1}. ${row.success ? "✅" : "❌"} <code>${escapeTelegramHtml(shortKey(row.public_key || "-", 8))}</code> | ${escapeTelegramHtml(row.source || "-")} | ${escapeTelegramHtml(previewStatus)}`);
+        lines.push(`${index + 1}. ${row.success ? "âœ…" : "âŒ"} <code>${escapeTelegramHtml(shortKey(row.public_key || "-", 8))}</code> | ${escapeTelegramHtml(row.source || "-")} | ${escapeTelegramHtml(previewStatus)}`);
     });
     if ((preview.results || []).length > 20) lines.push(`...dan ${preview.results.length - 20} target lain.`);
-    const keyboard = { inline_keyboard: [[{ text: "🚀 Run Mode", callback_data: "multi:run" }], [{ text: "⬅️ Review", callback_data: "multi:review" }], [{ text: "❌ Batal", callback_data: "multi:cancel" }]] };
+    const keyboard = { inline_keyboard: [[{ text: "ðŸš€ Run Mode", callback_data: "multi:run" }], [{ text: "â¬…ï¸ Review", callback_data: "multi:review" }], [{ text: "âŒ Batal", callback_data: "multi:cancel" }]] };
     return telegramSend(chatId, lines.join("\n"), keyboard);
 }
 
@@ -8841,7 +8852,7 @@ async function handleMultisigSaveWalletTextInput(message, pending = null) {
         }
         return telegramSend(chatId, formatTelegramLangText(tgLang.savedWalletDone, result), telegramBackKeyboard("menu:multisig"));
     } catch (err) {
-        return telegramSend(chatId, `❌ Gagal: ${escapeTelegramHtml(err.message || err)}`, multisigCancelKeyboard());
+        return telegramSend(chatId, `âŒ Gagal: ${escapeTelegramHtml(err.message || err)}`, multisigCancelKeyboard());
     }
 }
 
@@ -8849,7 +8860,7 @@ async function renderMultisigSavedWalletList(chatId, callbackQuery = null, notic
     const { lang: tgLang } = await getCurrentTelegramLanguageBundle();
     const allRows = await listMultisigSavedWallets();
     const rows = allRows.slice(0, 15);
-    const lines = [`<b>📦 ${escapeTelegramHtml(tgLang.savedWalletPhraseList)}</b>`];
+    const lines = [`<b>ðŸ“¦ ${escapeTelegramHtml(tgLang.savedWalletPhraseList)}</b>`];
     if (notice) {
         lines.push(`<b>${escapeTelegramHtml(notice)}</b>`, "");
     }
@@ -8861,14 +8872,14 @@ async function renderMultisigSavedWalletList(chatId, callbackQuery = null, notic
         lines.push(`Total: <b>${allRows.length}</b>`, "", `<b>${escapeTelegramHtml(tgLang.deleteOneByOne)}</b>`);
         rows.forEach((row, index) => {
             lines.push(`${index + 1}. <code>${escapeTelegramHtml(shortKey(row.public_key, 8))}</code> | ${escapeTelegramHtml(formatTelegramStatus(row.status || "saved"))}`);
-            buttons.push([{ text: `🗑️ ${shortKey(row.public_key, 6)}`, callback_data: `multi:saved:del:${multisigSavedWalletDeleteHash(row)}` }]);
+            buttons.push([{ text: `ðŸ—‘ï¸ ${shortKey(row.public_key, 6)}`, callback_data: `multi:saved:del:${multisigSavedWalletDeleteHash(row)}` }]);
         });
         if (allRows.length > rows.length) {
             lines.push(`...dan ${allRows.length - rows.length} wallet lain.`);
         }
     }
     buttons.unshift([{ text: tgLang.addSavedWallet, callback_data: "multi:save_wallets" }, { text: tgLang.runSavedBatch, callback_data: "multi:run_saved" }]);
-    buttons.unshift([{ text: tgLang.setSignerTestWallet || "🧪 Set Test Wallet", callback_data: "multi:watch:set_test" }, { text: tgLang.watchSignerAutoInstall || "🔁 Watch Signer Auto Install", callback_data: "multi:watch:start" }]);
+    buttons.unshift([{ text: tgLang.setSignerTestWallet || "ðŸ§ª Set Test Wallet", callback_data: "multi:watch:set_test" }, { text: tgLang.watchSignerAutoInstall || "ðŸ” Watch Signer Auto Install", callback_data: "multi:watch:start" }]);
     if (rows.length) {
         buttons.push([{ text: tgLang.deleteAllSavedWallets, callback_data: "multi:saved:delete_all_confirm" }]);
     }
@@ -8962,7 +8973,7 @@ async function handleMultisigWizardTextInput(message, state) {
             return renderMultisigReview(chatId, null, state);
         }
     } catch (err) {
-        return telegramSend(chatId, `❌ Gagal: ${escapeTelegramHtml(err.message || err)}`, multisigCancelKeyboard());
+        return telegramSend(chatId, `âŒ Gagal: ${escapeTelegramHtml(err.message || err)}`, multisigCancelKeyboard());
     }
     return telegramSend(chatId, "Step multisig tidak dikenal. Ketik /cancel lalu ulangi /menu.", multisigCancelKeyboard());
 }
@@ -8975,7 +8986,7 @@ async function handleMultisigWizardCallback(callbackQuery) {
     if (data.startsWith("multi:start:")) return startMultisigWizard(chatId, callbackQuery, data.slice("multi:start:".length));
     if (data === "multi:cancel") {
         telegramControlState.pendingInputs.delete(String(chatId));
-        return telegramEditOrSend(callbackQuery, "❌ Multisig dibatalkan.", telegramBackKeyboard("menu:multisig"));
+        return telegramEditOrSend(callbackQuery, "âŒ Multisig dibatalkan.", telegramBackKeyboard("menu:multisig"));
     }
     if (!state) state = { action: "multi_wizard", step: "mode", data: await defaultMultisigData(), created_at: Date.now() };
     if (data.startsWith("multi:mode:")) {
@@ -9189,7 +9200,7 @@ async function renderMultisigLockedList(chatId, callbackQuery = null, notice = "
     const allRows = await listMultisigLockedWallets();
     const rows = allRows.slice(0, 15);
     const lines = [
-        "<b>📋 Multisig Locked Wallet</b>",
+        "<b>ðŸ“‹ Multisig Locked Wallet</b>",
     ];
     if (notice) {
         lines.push(`<b>${escapeTelegramHtml(notice)}</b>`, "");
@@ -9204,7 +9215,7 @@ async function renderMultisigLockedList(chatId, callbackQuery = null, notice = "
         lines.push(`   Funding: <code>${escapeTelegramHtml(shortKey(row.funding_public_key, 8))}</code>`);
         lines.push(`   Signer: <code>${escapeTelegramHtml(shortKey(row.signer_public_key || row.funding_public_key, 8))}</code> | Master: ${escapeTelegramHtml(row.master_weight ?? "-")} | High: ${escapeTelegramHtml(row.high_threshold ?? "-")}`);
         if (row.hash) lines.push(`   Hash: <code>${escapeTelegramHtml(shortKey(row.hash, 10))}</code>`);
-        buttons.push([{ text: `🗑️ Hapus ${index + 1}. ${shortKey(row.public_key, 4)}`, callback_data: `multi:del:${multisigLockedDeleteHash(row)}` }]);
+        buttons.push([{ text: `ðŸ—‘ï¸ Hapus ${index + 1}. ${shortKey(row.public_key, 4)}`, callback_data: `multi:del:${multisigLockedDeleteHash(row)}` }]);
     });
     if (!rows.length) {
         lines.push("Belum ada locked wallet.");
@@ -9213,15 +9224,15 @@ async function renderMultisigLockedList(chatId, callbackQuery = null, notice = "
         lines.push(`...dan ${allRows.length - rows.length} wallet lain.`);
     }
     if (allRows.length) {
-        buttons.unshift([{ text: `🧹 Hapus Semua (${allRows.length})`, callback_data: "multi:delall" }]);
+        buttons.unshift([{ text: `ðŸ§¹ Hapus Semua (${allRows.length})`, callback_data: "multi:delall" }]);
     }
-    buttons.push([{ text: "🔄 Refresh", callback_data: "multi:locked" }, { text: "⬅️ Multisig", callback_data: "menu:multisig" }]);
+    buttons.push([{ text: "ðŸ”„ Refresh", callback_data: "multi:locked" }, { text: "â¬…ï¸ Multisig", callback_data: "menu:multisig" }]);
     return telegramEditOrSend(callbackQuery, lines.join("\n"), { inline_keyboard: buttons });
 }
 
 async function renderMultisigPendingList(chatId, callbackQuery = null) {
     const rows = (await listMultisigPendingLocks()).slice(0, 30);
-    const lines = ["<b>⏳ Multisig Pending Lock</b>"];
+    const lines = ["<b>â³ Multisig Pending Lock</b>"];
     rows.forEach((row, index) => {
         lines.push(`${index + 1}. <b>${escapeTelegramHtml(formatTelegramStatus(row.status))}</b> | ${escapeTelegramHtml(row.network || "-")} | target ${escapeTelegramHtml(row.target_count || 0)}`);
         lines.push(`   Funding: <code>${escapeTelegramHtml(shortKey(row.funding_public_key, 8))}</code> | Signer: <code>${escapeTelegramHtml(shortKey(row.signer_public_key || row.funding_public_key, 8))}</code>`);
@@ -9230,37 +9241,37 @@ async function renderMultisigPendingList(chatId, callbackQuery = null) {
         if (row.last_hash) lines.push(`   Hash: <code>${escapeTelegramHtml(shortKey(row.last_hash, 10))}</code>`);
     });
     if (!rows.length) lines.push("Belum ada pending lock.");
-    return telegramEditOrSend(callbackQuery, lines.join("\n"), { inline_keyboard: [[{ text: "🔄 Refresh", callback_data: "multi:pending" }, { text: "⬅️ Multisig", callback_data: "menu:multisig" }]] });
+    return telegramEditOrSend(callbackQuery, lines.join("\n"), { inline_keyboard: [[{ text: "ðŸ”„ Refresh", callback_data: "multi:pending" }, { text: "â¬…ï¸ Multisig", callback_data: "menu:multisig" }]] });
 }
 
 async function renderDeleteMenu(chatId, type, editQuery = null) {
     let rows = [];
     let title = "";
     if (type === "servers") {
-        title = "🗑️ Delete Server";
+        title = "ðŸ—‘ï¸ Delete Server";
         const servers = await listServers();
-        rows = servers.map((server) => [{ text: `🗑️ ${server.name}`, callback_data: `del:server:${server.id}` }]);
+        rows = servers.map((server) => [{ text: `ðŸ—‘ï¸ ${server.name}`, callback_data: `del:server:${server.id}` }]);
     } else if (type === "funding") {
-        title = "🗑️ Delete Funding";
+        title = "ðŸ—‘ï¸ Delete Funding";
         const wallets = await listWallets();
-        rows = wallets.map((wallet) => [{ text: `🗑️ ${wallet.name || shortKey(wallet.public_key)}`, callback_data: `del:fund:${wallet.id}` }]);
+        rows = wallets.map((wallet) => [{ text: `ðŸ—‘ï¸ ${wallet.name || shortKey(wallet.public_key)}`, callback_data: `del:fund:${wallet.id}` }]);
     } else if (type === "destinations") {
-        title = "🗑️ Delete Wallet Tujuan";
+        title = "ðŸ—‘ï¸ Delete Wallet Tujuan";
         const destinations = await listDestinations();
-        rows = destinations.map((destination) => [{ text: `🗑️ ${destination.name}`, callback_data: `del:dest:${destination.id}` }]);
+        rows = destinations.map((destination) => [{ text: `ðŸ—‘ï¸ ${destination.name}`, callback_data: `del:dest:${destination.id}` }]);
     } else if (type === "workers") {
-        title = "🗑️ Delete Worker";
+        title = "ðŸ—‘ï¸ Delete Worker";
         const workers = await listWorkers();
-        rows = workers.map((worker) => [{ text: `🗑️ ${worker.name}`, callback_data: `del:worker:${worker.id}` }]);
+        rows = workers.map((worker) => [{ text: `ðŸ—‘ï¸ ${worker.name}`, callback_data: `del:worker:${worker.id}` }]);
     } else if (type === "bots") {
-        title = "🗑️ Delete Bot";
+        title = "ðŸ—‘ï¸ Delete Bot";
         const bots = await listBots();
-        rows = bots.map((bot) => [{ text: `🗑️ ${bot.bot_name || bot.id}`, callback_data: `del:bot:${crypto.createHash("sha1").update(String(bot.bot_name || bot.id)).digest("hex").slice(0, 16)}` }]);
+        rows = bots.map((bot) => [{ text: `ðŸ—‘ï¸ ${bot.bot_name || bot.id}`, callback_data: `del:bot:${crypto.createHash("sha1").update(String(bot.bot_name || bot.id)).digest("hex").slice(0, 16)}` }]);
     }
     if (!rows.length) {
         rows.push([{ text: "Tidak ada data", callback_data: "noop" }]);
     }
-    rows.push([{ text: "⬅️ Kembali", callback_data: `menu:${type === "destinations" ? "destinations" : type === "funding" ? "funding" : type === "bots" ? "bots" : type === "workers" ? "workers" : "servers"}` }]);
+    rows.push([{ text: "â¬…ï¸ Kembali", callback_data: `menu:${type === "destinations" ? "destinations" : type === "funding" ? "funding" : type === "bots" ? "bots" : type === "workers" ? "workers" : "servers"}` }]);
     const keyboard = { inline_keyboard: rows };
     const text = `<b>${escapeTelegramHtml(title)}</b>\nPilih item yang ingin dihapus.`;
     if (editQuery) {
@@ -9275,8 +9286,8 @@ async function renderWorkerServerPicker(chatId, editQuery = null) {
     if (!rows.length) {
         rows.push([{ text: "Tambahkan server dulu", callback_data: "menu:servers" }]);
     }
-    rows.push([{ text: "⬅️ Kembali", callback_data: "menu:workers" }]);
-    const text = "<b>➕ Add Worker</b>\nPilih server untuk worker baru.";
+    rows.push([{ text: "â¬…ï¸ Kembali", callback_data: "menu:workers" }]);
+    const text = "<b>âž• Add Worker</b>\nPilih server untuk worker baru.";
     const keyboard = { inline_keyboard: rows };
     if (editQuery) {
         return telegramEditOrSend(editQuery, text, keyboard);
@@ -9331,7 +9342,7 @@ async function handleTelegramPendingInput(message, pending) {
             await telegramDeleteUserMessage(message);
             await telegramSend(
                 chatId,
-                `${tgLang.bumpAdded || "✅ Bump wallet diproses"}
+                `${tgLang.bumpAdded || "âœ… Bump wallet diproses"}
 Input: <b>${result.total_input}</b>
 Baru: <b>${result.added}</b> | Duplikat: <b>${result.duplicate}</b> | Gagal: <b>${result.failed}</b>
 
@@ -9404,7 +9415,7 @@ bump.txt sudah diupdate dan worker PM2 sudah dicoba restart.`,
                 await runTelegramLedgerScan(chatId, wallet, null, null, true, { lang: tgLang, callbackQuery: loading.callbackQuery, loading });
                 await loading.stop();
             } catch (err) {
-                await loading.stop(`❌ ${escapeTelegramHtml(err.message || err)}`, back("menu:ledger"));
+                await loading.stop(`âŒ ${escapeTelegramHtml(err.message || err)}`, back("menu:ledger"));
                 throw err;
             }
         } else if (pending.action === "ledger_range") {
@@ -9425,7 +9436,7 @@ bump.txt sudah diupdate dan worker PM2 sudah dicoba restart.`,
                 await runTelegramLedgerScan(chatId, wallet, range.ledger, range.ledgerEnd, false, { lang: tgLang, callbackQuery: loading.callbackQuery, loading });
                 await loading.stop();
             } catch (err) {
-                await loading.stop(`❌ ${escapeTelegramHtml(err.message || err)}`, back("menu:ledger"));
+                await loading.stop(`âŒ ${escapeTelegramHtml(err.message || err)}`, back("menu:ledger"));
                 throw err;
             }
         } else if (pending.action === "submit_before") {
@@ -9457,7 +9468,7 @@ bump.txt sudah diupdate dan worker PM2 sudah dicoba restart.`,
                 username: data.username || "telegram-admin",
                 user_timezone: data.user_timezone ?? normalizeUserTimezone(settings.user_timezone, 0),
                 status: data.status || "active",
-                custom_memo: data.custom_memo || "AUTO",
+                custom_memo: Object.prototype.hasOwnProperty.call(data, "custom_memo") ? data.custom_memo : "AUTO",
                 created_at: utcIso(),
             };
             if (botData.transaction_type === "claim_and_send" && !botData.amount) {
@@ -9528,7 +9539,7 @@ async function handleTelegramCallback(callbackQuery) {
                 await loading.stop();
                 return result;
             } catch (err) {
-                await loading.stop(`❌ ${escapeTelegramHtml(err.message || err)}`, back("menu:ledger"));
+                await loading.stop(`âŒ ${escapeTelegramHtml(err.message || err)}`, back("menu:ledger"));
                 throw err;
             }
         }
@@ -9553,7 +9564,7 @@ async function handleTelegramCallback(callbackQuery) {
                     chatId,
                     buffer,
                     filename,
-                    `📥 <b>Excel Check Ledger</b>
+                    `ðŸ“¥ <b>Excel Check Ledger</b>
 Wallet: <code>${escapeTelegramHtml(shortKey(scan.wallet, 10))}</code>
 Ledger: <b>${escapeTelegramHtml(scan.ledger)} - ${escapeTelegramHtml(scan.ledgerEnd)}</b>`,
                     telegramBackKeyboard("menu:ledger")
@@ -9676,20 +9687,20 @@ Ledger: <b>${escapeTelegramHtml(scan.ledger)} - ${escapeTelegramHtml(scan.ledger
         }
         if (data.startsWith("bump:del:")) {
             await deleteBumpSponsorByIndex(data.slice("bump:del:".length));
-            await telegramAnswerCallback(callbackQuery, tgLang.bumpDeleted || "✅ Bump wallet dihapus");
+            await telegramAnswerCallback(callbackQuery, tgLang.bumpDeleted || "âœ… Bump wallet dihapus");
             return renderTelegramBump(chatId, callbackQuery);
         }
         if (data === "bump:clear:confirm") {
             return telegramEditOrSend(callbackQuery, tgLang.bumpDeleteAllConfirm || "Yakin hapus semua wallet di bump.txt?", {
                 inline_keyboard: [
-                    [{ text: "✅ Ya, hapus all", callback_data: "bump:clear:yes" }],
+                    [{ text: "âœ… Ya, hapus all", callback_data: "bump:clear:yes" }],
                     [{ text: tgLang.back, callback_data: "menu:bump" }],
                 ],
             });
         }
         if (data === "bump:clear:yes") {
             const count = await clearAllBumpSponsors();
-            await telegramAnswerCallback(callbackQuery, formatTelegramLangText(tgLang.bumpDeleteAllDone || "✅ Semua wallet bump dihapus: {count}", { count }));
+            await telegramAnswerCallback(callbackQuery, formatTelegramLangText(tgLang.bumpDeleteAllDone || "âœ… Semua wallet bump dihapus: {count}", { count }));
             return renderTelegramBump(chatId, callbackQuery);
         }
         if (data === "input:add_server") {
@@ -9772,9 +9783,9 @@ Ledger: <b>${escapeTelegramHtml(scan.ledger)} - ${escapeTelegramHtml(scan.ledger
                 const runId = data.slice("multi:stop:".length);
                 const stopped = requestTelegramMultisigRunStop(chatId, runId);
                 if (!stopped) {
-                    return telegramEditOrSend(callbackQuery, "ℹ️ Run batch sudah selesai atau tidak aktif lagi.", telegramBackKeyboard("menu:multisig"));
+                    return telegramEditOrSend(callbackQuery, "â„¹ï¸ Run batch sudah selesai atau tidak aktif lagi.", telegramBackKeyboard("menu:multisig"));
                 }
-                return telegramEditOrSend(callbackQuery, tgLang.stopBatchRequested || "🛑 Stop diminta. Bot akan berhenti setelah batch/transaksi yang sedang berjalan selesai.", { inline_keyboard: [[{ text: "⏳ Menunggu stop...", callback_data: "noop" }]] });
+                return telegramEditOrSend(callbackQuery, tgLang.stopBatchRequested || "ðŸ›‘ Stop diminta. Bot akan berhenti setelah batch/transaksi yang sedang berjalan selesai.", { inline_keyboard: [[{ text: "â³ Menunggu stop...", callback_data: "noop" }]] });
             }
             if (data === "multi:watch:set_test") {
                 return promptMultisigSignerWatchTestPhrase(chatId, callbackQuery, false);
@@ -9784,7 +9795,7 @@ Ledger: <b>${escapeTelegramHtml(scan.ledger)} - ${escapeTelegramHtml(scan.ledger
             }
             if (data === "multi:watch:stop") {
                 const stoppedState = await stopMultisigSignerWatch(chatId, "Dihentikan oleh admin");
-                const stopText = tgLang.stopBatchRequested || "🛑 Stop diminta.";
+                const stopText = tgLang.stopBatchRequested || "ðŸ›‘ Stop diminta.";
                 return updateSignerWatchStatusMessage(chatId, stoppedState, tgLang, {
                     callbackQuery,
                     text: stopText,
@@ -9803,14 +9814,14 @@ Ledger: <b>${escapeTelegramHtml(scan.ledger)} - ${escapeTelegramHtml(scan.ledger
                 const target = rows.find((row) => multisigSignerDeleteHash(row) === hash);
                 if (!target) throw new Error("Signer Wallet tidak ditemukan");
                 await deleteMultisigSignerById(target.id);
-                return renderMultisigSignerList(chatId, callbackQuery, tgLang.signerDeleted || "✅ Signer Wallet deleted");
+                return renderMultisigSignerList(chatId, callbackQuery, tgLang.signerDeleted || "âœ… Signer Wallet deleted");
             }
             if (data === "multi:signers:delete_all_confirm") {
-                return telegramEditOrSend(callbackQuery, tgLang.signerDeleteAllConfirm || "Delete all Signer Wallets?", { inline_keyboard: [[{ text: "✅ YES DELETE ALL", callback_data: "multi:signers:delete_all" }], [{ text: tgLang.back, callback_data: "multi:signers" }]] });
+                return telegramEditOrSend(callbackQuery, tgLang.signerDeleteAllConfirm || "Delete all Signer Wallets?", { inline_keyboard: [[{ text: "âœ… YES DELETE ALL", callback_data: "multi:signers:delete_all" }], [{ text: tgLang.back, callback_data: "multi:signers" }]] });
             }
             if (data === "multi:signers:delete_all") {
                 const count = await deleteAllMultisigSigners();
-                return renderMultisigSignerList(chatId, callbackQuery, formatTelegramLangText(tgLang.signerDeleteAllDone || "✅ All Signer Wallets deleted: {count}", { count }));
+                return renderMultisigSignerList(chatId, callbackQuery, formatTelegramLangText(tgLang.signerDeleteAllDone || "âœ… All Signer Wallets deleted: {count}", { count }));
             }
             if (data === "multi:save_wallets") {
                 return promptMultisigSaveWallets(chatId, callbackQuery);
@@ -9830,7 +9841,7 @@ Ledger: <b>${escapeTelegramHtml(scan.ledger)} - ${escapeTelegramHtml(scan.ledger
                 return renderMultisigSavedWalletList(chatId, callbackQuery, tgLang.savedWalletDeleted);
             }
             if (data === "multi:saved:delete_all_confirm") {
-                return telegramEditOrSend(callbackQuery, tgLang.savedWalletDeleteAllConfirm, { inline_keyboard: [[{ text: "✅ YES DELETE ALL", callback_data: "multi:saved:delete_all" }], [{ text: tgLang.back, callback_data: "multi:saved_wallets" }]] });
+                return telegramEditOrSend(callbackQuery, tgLang.savedWalletDeleteAllConfirm, { inline_keyboard: [[{ text: "âœ… YES DELETE ALL", callback_data: "multi:saved:delete_all" }], [{ text: tgLang.back, callback_data: "multi:saved_wallets" }]] });
             }
             if (data === "multi:saved:delete_all") {
                 const count = await deleteAllMultisigSavedWallets();
@@ -9847,7 +9858,7 @@ Ledger: <b>${escapeTelegramHtml(scan.ledger)} - ${escapeTelegramHtml(scan.ledger
                 const config = await resolveMultisigNetworkConfig({ network });
                 const info = await fetchMultisigProtocolInfoWithFallback(config.horizonUrls, MULTISIG_REQUIRED_PROTOCOL_VERSION);
                 const lines = [
-                    `<b>🧭 Protocol Check ${network.toUpperCase()}</b>`,
+                    `<b>ðŸ§­ Protocol Check ${network.toUpperCase()}</b>`,
                     `Ready: <b>${info.ready ? "YES" : "NO"}</b>`,
                     `Current: <b>${info.current_protocol_version ?? "-"}</b>`,
                     `Required: <b>${info.required_protocol_version}</b>`,
@@ -9864,20 +9875,20 @@ Ledger: <b>${escapeTelegramHtml(scan.ledger)} - ${escapeTelegramHtml(scan.ledger
                 }
                 const keyboard = {
                     inline_keyboard: [
-                        [{ text: `✅ Ya, Hapus Semua (${rows.length})`, callback_data: "multi:delall:yes" }],
-                        [{ text: "❌ Batal", callback_data: "multi:locked" }],
+                        [{ text: `âœ… Ya, Hapus Semua (${rows.length})`, callback_data: "multi:delall:yes" }],
+                        [{ text: "âŒ Batal", callback_data: "multi:locked" }],
                     ],
                 };
                 return telegramEditOrSend(
                     callbackQuery,
-                    `<b>⚠️ Konfirmasi Hapus Semua</b>\nTotal locked wallet: <b>${escapeTelegramHtml(rows.length)}</b>\n\nAksi ini hanya menghapus data dari daftar bot/pending, bukan mengirim transaksi blockchain.`,
+                    `<b>âš ï¸ Konfirmasi Hapus Semua</b>\nTotal locked wallet: <b>${escapeTelegramHtml(rows.length)}</b>\n\nAksi ini hanya menghapus data dari daftar bot/pending, bukan mengirim transaksi blockchain.`,
                     keyboard
                 );
             }
             if (data === "multi:delall:yes") {
                 const result = await deleteAllMultisigLockedWalletEntries();
                 const skippedText = result.pending_skipped_count ? `, pending gagal update: ${result.pending_skipped_count}` : "";
-                return renderMultisigLockedList(chatId, callbackQuery, `✅ Semua locked wallet dihapus: ${result.removed_count} row, pending update: ${result.pending_removed_count}${skippedText}`);
+                return renderMultisigLockedList(chatId, callbackQuery, `âœ… Semua locked wallet dihapus: ${result.removed_count} row, pending update: ${result.pending_removed_count}${skippedText}`);
             }
             if (data.startsWith("multi:del:")) {
                 const hash = data.slice("multi:del:".length);
@@ -9885,12 +9896,12 @@ Ledger: <b>${escapeTelegramHtml(scan.ledger)} - ${escapeTelegramHtml(scan.ledger
                 const target = rows.find((row) => multisigLockedDeleteHash(row) === hash);
                 if (!target) throw new Error("Locked wallet tidak ditemukan");
                 const result = await deleteMultisigLockedWalletEntry({ publicKey: target.public_key, fundingPublicKey: target.funding_public_key, network: target.network });
-                return renderMultisigLockedList(chatId, callbackQuery, `✅ Locked wallet dihapus: ${result.removed_count} row, pending update: ${result.pending_removed_count}`);
+                return renderMultisigLockedList(chatId, callbackQuery, `âœ… Locked wallet dihapus: ${result.removed_count} row, pending update: ${result.pending_removed_count}`);
             }
             return handleMultisigWizardCallback(callbackQuery);
         }
     } catch (err) {
-        await telegramEditOrSend(callbackQuery, `❌ Error: ${escapeTelegramHtml(err.message || err)}`, back());
+        await telegramEditOrSend(callbackQuery, `âŒ Error: ${escapeTelegramHtml(err.message || err)}`, back());
     }
 }
 
@@ -9901,7 +9912,7 @@ async function handleTelegramMessage(message) {
     }
     if (!(await isAuthorizedTelegramChat(chatId))) {
         const { lang } = await getCurrentTelegramLanguageBundle();
-        return telegramSend(chatId, `❌ ${lang.chatNotAllowed}`);
+        return telegramSend(chatId, `âŒ ${lang.chatNotAllowed}`);
     }
 
     const text = String(message.text || "").trim();
@@ -10494,11 +10505,11 @@ async function addWorker(name, serverId) {
     };
     try {
         Object.assign(newWorker, await startPm2WorkerProcess(newWorker));
-        broadcastLog(`✅ Worker ${name} dibuat otomatis di PM2 port ${newWorker.port} (${newWorker.pm2_name})`, "success");
+        broadcastLog(`âœ… Worker ${name} dibuat otomatis di PM2 port ${newWorker.port} (${newWorker.pm2_name})`, "success");
     } catch (err) {
         newWorker.pm2_status = "error";
         newWorker.pm2_error = err.message;
-        broadcastLog(`⚠️ Worker ${name} tersimpan tetapi PM2 gagal dibuat: ${err.message}`, "warning");
+        broadcastLog(`âš ï¸ Worker ${name} tersimpan tetapi PM2 gagal dibuat: ${err.message}`, "warning");
     }
     workers.push(newWorker);
     await saveData(WORKERS_KEY, workers);
@@ -10513,7 +10524,7 @@ async function deleteWorkerById(workerId) {
     if (filtered.length < workers.length) {
         if (target) {
             await deletePm2WorkerProcess(target);
-            broadcastLog(`🗑️ Worker ${target.name || workerId} dihapus dari Redis dan PM2`, "warning");
+            broadcastLog(`ðŸ—‘ï¸ Worker ${target.name || workerId} dihapus dari Redis dan PM2`, "warning");
         }
         await saveData(WORKERS_KEY, filtered);
         return true;
@@ -10824,7 +10835,7 @@ app.post(
 
         try {
             await sendTelegramMessage(
-                `🔐 OTP reset password PILEAKERS\n\nUsername: ${username}\nOTP: ${otp}\nBerlaku: ${Math.ceil((expiresAt - Date.now()) / 60000)} menit`
+                `ðŸ” OTP reset password PILEAKERS\n\nUsername: ${username}\nOTP: ${otp}\nBerlaku: ${Math.ceil((expiresAt - Date.now()) / 60000)} menit`
             );
         } catch (err) {
             passwordResetOtps.delete(username);
@@ -11314,7 +11325,7 @@ app.route("/api/bots")
         asyncHandler(async (req, res) => {
             const botData = { ...(req.body || {}) };
 
-            if (!botData.custom_memo || String(botData.custom_memo).trim() === "") {
+            if (botData.custom_memo === undefined || botData.custom_memo === null) {
                 botData.custom_memo = "AUTO";
             }
 
@@ -12414,7 +12425,7 @@ PILEAKERS_LEDGER_JS
 
   backup_file "bump.txt"
   cat > "bump.txt" <<'PILEAKERS_BUMP_TXT'
-# Tambahkan bump wallet dari Telegram: 💼 Manage Bump -> Add Bump / Upload bump.txt
+# Tambahkan bump wallet dari Telegram: ðŸ’¼ Manage Bump -> Add Bump / Upload bump.txt
 PILEAKERS_BUMP_TXT
 
   backup_file "index.html"
@@ -12718,7 +12729,7 @@ const SIGNED_XDR_STORE_KEY_PREFIX = "pileakers:signed-xdr:";
 const SIGNED_XDR_STORE_TTL_MS = parsePositiveIntEnv("SIGNED_XDR_STORE_TTL_MS", 900000, 60000, 86400000);
 let SUBMIT_ENDPOINT_MODE = String(process.env.SUBMIT_ENDPOINT_MODE || "async").trim().toLowerCase() === "sync" ? "sync" : "async";
 const SUBMIT_VERBOSE_LOGS = process.env.SUBMIT_VERBOSE_LOGS === "true";
-// Classic Submit Mode: meniru worker contoh — satu trigger submit, semua signed XDR ditembak Promise.all.
+// Classic Submit Mode: meniru worker contoh â€” satu trigger submit, semua signed XDR ditembak Promise.all.
 const CLASSIC_SUBMIT_TO_ALL_HORIZONS = String(process.env.CLASSIC_SUBMIT_TO_ALL_HORIZONS || "false").trim().toLowerCase() === "true";
 const CLASSIC_SUBMIT_LOG_EACH_TX = String(process.env.CLASSIC_SUBMIT_LOG_EACH_TX || "false").trim().toLowerCase() === "true";
 const SYNC_VERBOSE_LOGS = process.env.SYNC_VERBOSE_LOGS === "true";
@@ -12764,6 +12775,10 @@ const HELPER_LOAD_RETRY_DELAY_MS = parsePositiveIntEnv("HELPER_LOAD_RETRY_DELAY_
 const HORIZON_REQUEST_DELAY_MS = parsePositiveIntEnv("HORIZON_REQUEST_DELAY_MS", 150, 0, 60000);
 const HORIZON_RATE_LIMIT_COOLDOWN_MS = parsePositiveIntEnv("HORIZON_RATE_LIMIT_COOLDOWN_MS", 20000, 1000, 600000);
 const HORIZON_RATE_LIMIT_JITTER_MS = parsePositiveIntEnv("HORIZON_RATE_LIMIT_JITTER_MS", 500, 0, 60000);
+const EXACT_LEDGER_MODE = String(process.env.EXACT_LEDGER_MODE || "true").trim().toLowerCase() === "true";
+const EXACT_LEDGER_MONITOR_BEFORE_MS = parsePositiveIntEnv("EXACT_LEDGER_MONITOR_BEFORE_MS", 15000, 1000, 300000);
+const EXACT_LEDGER_CLOSE_AVG_MS = parsePositiveIntEnv("EXACT_LEDGER_CLOSE_AVG_MS", 5000, 1000, 30000);
+const EXACT_LEDGER_MAX_OFFSET = parsePositiveIntEnv("EXACT_LEDGER_MAX_OFFSET", 1, 0, 10);
 
 // Shared keep-alive submit pool. Ini padanan Node.js untuk requests.Session + HTTPAdapter
 // pada contoh Python: koneksi TCP/TLS dipakai ulang, bukan dibuat ulang untuk setiap TX.
@@ -12808,10 +12823,10 @@ function loadSponsorsFromFile(filePath) {
                .split("\n")
                .map((line) => line.trim())
                .filter((line) => line.length > 0 && !line.startsWith("#"));
-          console.log(`[${WORKER_NAME}] 📦 Loaded ${lines.length} fee bump sponsors from ${filePath}`);
+          console.log(`[${WORKER_NAME}] ðŸ“¦ Loaded ${lines.length} fee bump sponsors from ${filePath}`);
           return lines;
      } catch (error) {
-          console.error(`[${WORKER_NAME}] ❌ Failed to load sponsors from ${filePath}: ${error.message}`);
+          console.error(`[${WORKER_NAME}] âŒ Failed to load sponsors from ${filePath}: ${error.message}`);
           return [];
      }
 }
@@ -12924,9 +12939,29 @@ function stripTransactionPreconditions(tx) {
      return tx;
 }
 
-function applyTransactionBounds(txBuilder, minTime, maxTime) {
-     // Pakai timebounds saja supaya transaksi tidak terkunci ke ledger tertentu.
+function applyTransactionBounds(txBuilder, minTime, maxTime, ledgerBounds = null, botName = WORKER_NAME) {
      txBuilder.setTimebounds(minTime, maxTime);
+     if (!ledgerBounds) {
+          return txBuilder;
+     }
+
+     const minLedger = Number.parseInt(ledgerBounds.minLedger, 10);
+     const maxLedger = Number.parseInt(ledgerBounds.maxLedger, 10);
+     if (!Number.isSafeInteger(minLedger) || !Number.isSafeInteger(maxLedger) || minLedger < 1 || maxLedger < minLedger) {
+          workerLog(`[${botName}] âš ï¸ Ledger bounds tidak valid, lanjut pakai timebounds saja.`, "warning");
+          return txBuilder;
+     }
+
+     const setLedgerBounds =
+          typeof txBuilder.setLedgerbounds === "function"
+               ? txBuilder.setLedgerbounds.bind(txBuilder)
+               : (typeof txBuilder.setLedgerBounds === "function" ? txBuilder.setLedgerBounds.bind(txBuilder) : null);
+     if (!setLedgerBounds) {
+          workerLog(`[${botName}] âš ï¸ Stellar SDK tidak mendukung setLedgerbounds; lanjut pakai timebounds saja.`, "warning");
+          return txBuilder;
+     }
+
+     setLedgerBounds(minLedger, maxLedger);
      return txBuilder;
 }
 
@@ -13557,9 +13592,9 @@ async function acquireLoadingLock(botName, unlockTime, horizonUrl) {
 
 function releaseLoadingLock(botName) {
      if (currentLoadingBot === botName) {
-          workerLog(`[${botName}] ⏳ Waiting 2s before releasing lock...`, "info");
+          workerLog(`[${botName}] â³ Waiting 2s before releasing lock...`, "info");
           setTimeout(() => {
-               console.log(`[${botName}] 🔓 Released loading lock`);
+               console.log(`[${botName}] ðŸ”“ Released loading lock`);
                currentLoadingBot = null;
                isLoadingInProgress = false;
                processLoadingQueue();
@@ -13580,7 +13615,7 @@ function processLoadingQueue() {
      const serverIP = serverMatch ? serverMatch[1] : "unknown";
 
      workerLog(
-          `[${nextItem.botName}] 🔒 Acquired loading lock (Server: ${serverIP}, Queue: ${loadingQueue.length} waiting)`,
+          `[${nextItem.botName}] ðŸ”’ Acquired loading lock (Server: ${serverIP}, Queue: ${loadingQueue.length} waiting)`,
           "info"
      );
      nextItem.resolve();
@@ -13627,11 +13662,11 @@ async function refreshRuntimeSettings() {
      const nextSubmitEndpointMode = normalizeRuntimeSubmitEndpointMode(settings.submit_endpoint_mode, SUBMIT_ENDPOINT_MODE);
      if (nextSubmitBeforeMs !== SUBMIT_BEFORE_MS) {
           SUBMIT_BEFORE_MS = nextSubmitBeforeMs;
-          workerLog(`⚙️ Runtime setting updated: SUBMIT_BEFORE_MS=${SUBMIT_BEFORE_MS}ms`, "success");
+          workerLog(`âš™ï¸ Runtime setting updated: SUBMIT_BEFORE_MS=${SUBMIT_BEFORE_MS}ms`, "success");
      }
      if (nextSubmitEndpointMode !== SUBMIT_ENDPOINT_MODE) {
           SUBMIT_ENDPOINT_MODE = nextSubmitEndpointMode;
-          workerLog(`⚙️ Runtime setting updated: MODE=${SUBMIT_ENDPOINT_MODE}`, "success");
+          workerLog(`âš™ï¸ Runtime setting updated: MODE=${SUBMIT_ENDPOINT_MODE}`, "success");
      }
      return { submit_before_ms: SUBMIT_BEFORE_MS, submit_endpoint_mode: SUBMIT_ENDPOINT_MODE };
 }
@@ -13672,7 +13707,7 @@ function formatFeeLossTelegramLines(feeLossInfo) {
 
 async function sendSuccessNotification(hash, pub, amount, network, feeLossInfo = null) {
      try {
-          const text = `✅ **Transaction Successful!**\n\n*Amount:* ${amount} PI\n*Public Key:* ${pub}\n*Hash:* ${hash}\n*Explorer:* ${getExplorerUrl(network, hash)}${formatFeeLossTelegramLines(feeLossInfo)}`;
+          const text = `âœ… **Transaction Successful!**\n\n*Amount:* ${amount} PI\n*Public Key:* ${pub}\n*Hash:* ${hash}\n*Explorer:* ${getExplorerUrl(network, hash)}${formatFeeLossTelegramLines(feeLossInfo)}`;
           await sendTelegramMarkdown(text);
      } catch (error) {
           console.error(`Telegram Error: ${error.message}`);
@@ -13681,7 +13716,7 @@ async function sendSuccessNotification(hash, pub, amount, network, feeLossInfo =
 
 async function sendFailureNotification(hash, pub, amount, network, feeLossInfo = null, workerSummary = "") {
      try {
-          const text = `❌ **Transaction Failed!**\n\n*Amount:* ${amount} PI\n*Public Key:* ${pub}\n*Hash:* ${hash || "-"}\n*Explorer:* ${getExplorerUrl(network, hash)}${formatFeeLossTelegramLines(feeLossInfo)}${workerSummary ? `\n*Workers Failed:* ${workerSummary}` : ""}`;
+          const text = `âŒ **Transaction Failed!**\n\n*Amount:* ${amount} PI\n*Public Key:* ${pub}\n*Hash:* ${hash || "-"}\n*Explorer:* ${getExplorerUrl(network, hash)}${formatFeeLossTelegramLines(feeLossInfo)}${workerSummary ? `\n*Workers Failed:* ${workerSummary}` : ""}`;
           await sendTelegramMarkdown(text);
      } catch (error) {
           console.error(`Telegram Error: ${error.message}`);
@@ -13692,7 +13727,7 @@ async function sendNewBotTelegram(botName, amount, memo) {
      const telegram = await getTelegramSettings();
      if (!telegram.botToken || !telegram.chatId) return;
      try {
-          const text = `📥 **New Bot Detected: ${botName}**\n\n*Amount:* ${amount || "0"} PI\n*Memo:* ${memo || "-"}\n*Developer: @zendshost*`;
+          const text = `ðŸ“¥ **New Bot Detected: ${botName}**\n\n*Amount:* ${amount || "0"} PI\n*Memo:* ${memo || "-"}\n*Developer: @zendshost*`;
 
           await fetch(`https://api.telegram.org/bot${telegram.botToken}/sendMessage`, {
                method: "POST",
@@ -13797,6 +13832,53 @@ function createStellarServer(horizonUrl) {
      return new stellar.Horizon.Server(horizonUrl);
 }
 
+async function fetchLatestLedgerSnapshot(horizonUrls, botName = WORKER_NAME) {
+     const urls = normalizeHorizonUrls(horizonUrls);
+     for (const horizonUrl of urls) {
+          try {
+               const server = createStellarServer(horizonUrl);
+               const page = await server.ledgers().order("desc").limit(1).call();
+               const ledger = page?.records?.[0] || page?._embedded?.records?.[0] || null;
+               const sequence = Number.parseInt(ledger?.sequence || ledger?.ledger || ledger?.id, 10);
+               const closedAtMs = Date.parse(ledger?.closed_at || "");
+               if (Number.isSafeInteger(sequence) && Number.isFinite(closedAtMs)) {
+                    return { sequence, closedAtMs, closedAt: new Date(closedAtMs).toISOString(), horizonUrl };
+               }
+          } catch (error) {
+               workerLog(`[${botName}] âš ï¸ Gagal baca latest ledger dari ${horizonUrl}: ${error.message}`, "warning");
+          }
+     }
+     return null;
+}
+
+async function resolveExactLedgerBounds(horizonUrls, unlockTimeMs, botName = WORKER_NAME) {
+     if (!EXACT_LEDGER_MODE) {
+          return null;
+     }
+
+     const latest = await fetchLatestLedgerSnapshot(horizonUrls, botName);
+     if (!latest) {
+          workerLog(`[${botName}] âš ï¸ Exact Ledger Mode aktif, tapi latest ledger tidak terbaca. Lanjut timebounds saja.`, "warning");
+          return null;
+     }
+
+     const diffMs = unlockTimeMs - latest.closedAtMs;
+     const ledgersAhead = diffMs <= 0 ? 0 : Math.max(1, Math.ceil(diffMs / EXACT_LEDGER_CLOSE_AVG_MS));
+     const targetLedger = latest.sequence + ledgersAhead;
+     const minLedger = targetLedger;
+     const maxLedger = targetLedger + EXACT_LEDGER_MAX_OFFSET;
+
+     return {
+          latestLedger: latest.sequence,
+          latestClosedAt: latest.closedAt,
+          targetLedger,
+          minLedger,
+          maxLedger,
+          ledgersAhead,
+          horizonUrl: latest.horizonUrl,
+     };
+}
+
 function withTimeout(promise, timeoutMs, message) {
      let timeoutId;
      const timeoutPromise = new Promise((_, reject) => {
@@ -13860,7 +13942,7 @@ async function loadAllHelpersAsync(horizonUrls, mnemonicList, botName, helperSta
           return [];
      }
 
-     workerLog(`[${botName}] ⏳ Loading ${mnemonicList.length} helpers...`, "info");
+     workerLog(`[${botName}] â³ Loading ${mnemonicList.length} helpers...`, "info");
 
      const maxRetries = Math.max(1, HELPER_LOAD_RETRY_COUNT);
      const retryDelayBaseMs = Math.max(0, HELPER_LOAD_RETRY_DELAY_MS);
@@ -13895,14 +13977,14 @@ async function loadAllHelpersAsync(horizonUrls, mnemonicList, botName, helperSta
                }
 
                const helperShort = pub.substring(pub.length - 4);
-               workerLog(`[${botName}] ✅ Helper ${helperNumber} loaded (...${helperShort})`, "success");
+               workerLog(`[${botName}] âœ… Helper ${helperNumber} loaded (...${helperShort})`, "success");
                return {
                     success: true,
                     helper: { pub, keypair, sequence: BigInt(account.sequence), account, helperNumber },
                     index,
                };
           } catch (error) {
-               workerLog(`[${botName}] ❌ Helper ${helperNumber} failed: ${error.message}`, "error");
+               workerLog(`[${botName}] âŒ Helper ${helperNumber} failed: ${error.message}`, "error");
                return { success: false, error: error.message, index };
           }
      });
@@ -13913,11 +13995,11 @@ async function loadAllHelpersAsync(horizonUrls, mnemonicList, botName, helperSta
 
      if (failedCount > 0) {
           workerLog(
-               `[${botName}] ⚠️ ${failedCount} helpers failed to load, continuing with ${successfulHelpers.length} successful helpers`,
+               `[${botName}] âš ï¸ ${failedCount} helpers failed to load, continuing with ${successfulHelpers.length} successful helpers`,
                "warning"
           );
      } else {
-          workerLog(`[${botName}] ✅ All ${successfulHelpers.length}/${mnemonicList.length} helpers ready`, "info");
+          workerLog(`[${botName}] âœ… All ${successfulHelpers.length}/${mnemonicList.length} helpers ready`, "info");
      }
 
      return successfulHelpers;
@@ -14128,7 +14210,7 @@ async function updateBotStatusLegacy(botName, status, message) {
           }
 
           if (!readSuccess) {
-               console.error(`[${WORKER_NAME}] ❌ Gagal update status ${botName}: Redis tidak dapat diakses.`);
+               console.error(`[${WORKER_NAME}] âŒ Gagal update status ${botName}: Redis tidak dapat diakses.`);
                return;
           }
 
@@ -14168,7 +14250,7 @@ async function updateBotStatusLegacy(botName, status, message) {
                await sendLogToWebService(`[Status Change] Bot ${botName} set to: ${status}`, "info");
           }
      } catch (error) {
-          console.error(`[${WORKER_NAME}] ❌ Error updating bot status in Redis: ${error.message}`);
+          console.error(`[${WORKER_NAME}] âŒ Error updating bot status in Redis: ${error.message}`);
      }
 }
 
@@ -14319,10 +14401,10 @@ async function releaseBotSequenceReservations(botName) {
                } catch (error) {}
           }
           if (released > 0) {
-               workerLog(`[${botName}] 🧹 Sequence Manager: released ${released} helper reservation(s).`, "info");
+               workerLog(`[${botName}] ðŸ§¹ Sequence Manager: released ${released} helper reservation(s).`, "info");
           }
      } catch (error) {
-          workerLog(`[${botName}] ⚠️ Sequence Manager release error: ${error.message}`, "warning");
+          workerLog(`[${botName}] âš ï¸ Sequence Manager release error: ${error.message}`, "warning");
      }
      return released;
 }
@@ -14414,7 +14496,7 @@ async function fetchFundingWalletBalanceStroops(publicKey, horizonUrls, botName,
                return getNativeBalanceStroops(account);
           } catch (error) {
                workerLog(
-                    `[${botName}] ⚠️ Gagal ambil saldo funding ${label} via ${horizonUrl}: ${formatHorizonError(error)}`,
+                    `[${botName}] âš ï¸ Gagal ambil saldo funding ${label} via ${horizonUrl}: ${formatHorizonError(error)}`,
                     "warning"
                );
           }
@@ -14536,7 +14618,7 @@ function pauseBot(botName) {
                botsCache.set(botName, cached);
           }
 
-          workerLog(`[${botName}] ⏸️ Bot paused.`, "warning");
+          workerLog(`[${botName}] â¸ï¸ Bot paused.`, "warning");
      }
 }
 
@@ -14552,7 +14634,7 @@ function resumeBot(botName) {
                botsCache.set(botName, cached);
           }
 
-          workerLog(`[${botName}] ▶️ Bot resumed.`, "success");
+          workerLog(`[${botName}] â–¶ï¸ Bot resumed.`, "success");
      }
 }
 
@@ -14570,9 +14652,9 @@ function stopBot(botName) {
 
           activeBots.delete(botName);
           releaseBotSequenceReservations(botName).catch((error) =>
-               workerLog(`[${botName}] ⚠️ Gagal release sequence reservation saat stop: ${error.message}`, "warning")
+               workerLog(`[${botName}] âš ï¸ Gagal release sequence reservation saat stop: ${error.message}`, "warning")
           );
-          workerLog(`[${botName}] 🛑 Bot stopped.`, "warning");
+          workerLog(`[${botName}] ðŸ›‘ Bot stopped.`, "warning");
      }
 }
 
@@ -14754,7 +14836,7 @@ async function payHelpers(
                          );
                          successCount += batch.length;
                          workerLog(
-                              `[${botName}] ✅ Top up batch ${batchIndex + 1}/${topupBatches.length} (${batchLabel}) selesai untuk ${batch.length} helper. Hash: ${result.hash}`,
+                              `[${botName}] âœ… Top up batch ${batchIndex + 1}/${topupBatches.length} (${batchLabel}) selesai untuk ${batch.length} helper. Hash: ${result.hash}`,
                               "success"
                          );
 
@@ -14783,7 +14865,7 @@ async function payHelpers(
                     "warning"
                );
           } else {
-               workerLog(`[${botName}] ❌ Error saat eksekusi top up: ${formatHorizonError(error)}`, "error");
+               workerLog(`[${botName}] âŒ Error saat eksekusi top up: ${formatHorizonError(error)}`, "error");
           }
           return { successCount: 0 };
      }
@@ -14798,7 +14880,7 @@ async function recoverFees(
      delaySeconds,
      custom_memo
 ) {
-     workerLog(`[${botName}] 🔄 Menunggu ${delaySeconds}s sebelum sweep...`, "info");
+     workerLog(`[${botName}] ðŸ”„ Menunggu ${delaySeconds}s sebelum sweep...`, "info");
      await new Promise((resolve) => setTimeout(resolve, delaySeconds * 1000));
 
      const sweepHorizons = normalizeHorizonUrls(horizonUrls);
@@ -14838,7 +14920,7 @@ async function recoverFees(
 
                if (sweepAmountStroops <= 0n) {
                     workerLog(
-                         `[${botName}] ⚠️ Helper ${idx + 1} (...${helperShort}): Saldo tidak cukup untuk di-sweep (${formatPiStroops(currentBalanceStroops)} PI)`,
+                         `[${botName}] âš ï¸ Helper ${idx + 1} (...${helperShort}): Saldo tidak cukup untuk di-sweep (${formatPiStroops(currentBalanceStroops)} PI)`,
                          "warning"
                     );
                     return { success: false, helperIdx: idx, skipped: true };
@@ -14877,7 +14959,7 @@ async function recoverFees(
                     false
                );
                workerLog(
-                    `[${botName}] ✅ Berhasil tarik ${formatPiStroops(sweepAmountStroops)} PI dari helper ${idx + 1} (...${helperShort})`,
+                    `[${botName}] âœ… Berhasil tarik ${formatPiStroops(sweepAmountStroops)} PI dari helper ${idx + 1} (...${helperShort})`,
                     "success"
                );
 
@@ -14894,7 +14976,7 @@ async function recoverFees(
                          status,
                     };
                }
-               workerLog(`[${botName}] ❌ Gagal tarik dari helper ${idx + 1}: ${error.message}`, "error");
+               workerLog(`[${botName}] âŒ Gagal tarik dari helper ${idx + 1}: ${error.message}`, "error");
                return { success: false, helperIdx: idx, error: error.message, retryable: false, status };
           }
      };
@@ -14952,7 +15034,7 @@ async function recoverFees(
           }
      }
      const successCount = results.filter((r) => r.success).length;
-     workerLog(`[${botName}] 🔄 Sweep selesai: ${successCount}/${helpers.length} helper berhasil dikosongkan.`, "info");
+     workerLog(`[${botName}] ðŸ”„ Sweep selesai: ${successCount}/${helpers.length} helper berhasil dikosongkan.`, "info");
 
      return results;
 }
@@ -14999,13 +15081,13 @@ async function executeBot(config) {
           const utcUnlockTime = new Date(userLocalTime.getTime() - timezoneOffset * 60 * 60 * 1000);
 
           workerLog(
-               `[${botName}] 🌍 Timezone: UTC${timezoneOffset >= 0 ? "+" : ""}${timezoneOffset}, Unlock: ${utcUnlockTime.toISOString()}`,
+               `[${botName}] ðŸŒ Timezone: UTC${timezoneOffset >= 0 ? "+" : ""}${timezoneOffset}, Unlock: ${utcUnlockTime.toISOString()}`,
                "info"
           );
 
           await updateBotStatus(botName, "active", "Initializing...");
           workerLog(
-               `[${botName}] 🚀 Bot starting - ${transaction_type} on ${network} using server ${horizon_url}`,
+               `[${botName}] ðŸš€ Bot starting - ${transaction_type} on ${network} using server ${horizon_url}`,
                "info"
           );
 
@@ -15024,12 +15106,12 @@ async function executeBot(config) {
           const selectedSponsors = availableSponsors.slice(helperRangeParsed.start, helperRangeParsed.end + 1);
 
           workerLog(
-               `[${botName}] 👥 Selected sponsors: ${selectedSponsors.length}, Transaction type: ${transaction_type}, Mode: ${transaction_mode}`,
+               `[${botName}] ðŸ‘¥ Selected sponsors: ${selectedSponsors.length}, Transaction type: ${transaction_type}, Mode: ${transaction_mode}`,
                "info"
           );
           if (!isNormalTransactionMode && (topup_helpers || sweep_helpers)) {
                workerLog(
-                    `[${botName}] ℹ️ Auto Top Up/Sweep hanya aktif di mode normal. Di mode ${transaction_mode}, fitur ini dilewati.`,
+                    `[${botName}] â„¹ï¸ Auto Top Up/Sweep hanya aktif di mode normal. Di mode ${transaction_mode}, fitur ini dilewati.`,
                     "info"
                );
           }
@@ -15075,7 +15157,7 @@ async function executeBot(config) {
                );
                if (fundingBalanceBeforeStroops !== null) {
                     await saveFundingWalletStartBalance(fee_payer_id, fundingBalanceBeforeStroops, fundingRunId);
-                    workerLog(`[${botName}] 💰 Saldo awal funding: ${formatPiStroops(fundingBalanceBeforeStroops)} PI`, "info");
+                    workerLog(`[${botName}] ðŸ’° Saldo awal funding: ${formatPiStroops(fundingBalanceBeforeStroops)} PI`, "info");
                }
           }
 
@@ -15091,12 +15173,13 @@ async function executeBot(config) {
           let signedTransactions = [];
           let signedTransactionCount = 0;
           let ledgerStreamCloser = null;
+          let exactLedgerBounds = null;
 
           const stopTime = new Date(unlockTimeMs + 10000);
 
           const buildAndSignTransactions = async (sequenceIncrement = 0n) => {
                workerLog(
-                    `[${botName}] 🔧 Signing ${helpers.length} transactions (seq+${sequenceIncrement})...`,
+                    `[${botName}] ðŸ”§ Signing ${helpers.length} transactions (seq+${sequenceIncrement})...`,
                     "info"
                );
                const operations = buildOperations(claimerPub, destination, amount, transaction_type, claimableIds);
@@ -15105,9 +15188,22 @@ async function executeBot(config) {
                // Timezone VPS tidak memengaruhi hitungan ini karena memakai epoch UTC.
                const maxTime = Math.floor((submitAtMs + TRANSACTION_TIMEOUT_MS) / 1000);
                workerLog(
-                    `[${botName}] Timebounds WIN: minTime=${minTime}, maxTime=${maxTime} (valid sampai call submit + ${TRANSACTION_TIMEOUT_MS}ms, tanpa ledger bounds).`,
+                    `[${botName}] Timebounds WIN: minTime=${minTime}, maxTime=${maxTime} (valid sampai call submit + ${TRANSACTION_TIMEOUT_MS}ms).`,
                     "info"
                );
+               if (EXACT_LEDGER_MODE && !exactLedgerBounds) {
+                    exactLedgerBounds = await resolveExactLedgerBounds(
+                         finalOnlineServers.length > 0 ? finalOnlineServers : horizonCandidates,
+                         unlockTimeMs,
+                         botName
+                    );
+                    if (exactLedgerBounds) {
+                         workerLog(
+                              `[${botName}] ðŸŽ¯ Exact Ledger: latest=${exactLedgerBounds.latestLedger} (${exactLedgerBounds.latestClosedAt}), target=${exactLedgerBounds.targetLedger}, bounds=${exactLedgerBounds.minLedger}-${exactLedgerBounds.maxLedger}, ahead=${exactLedgerBounds.ledgersAhead}.`,
+                              "success"
+                         );
+                    }
+               }
                const estimatedFeeChargedStroops = getEstimatedFeeChargedStroops(
                     operations.length,
                     transaction_mode
@@ -15120,7 +15216,7 @@ async function executeBot(config) {
                     transaction_mode === "normal" ? getNormalModeBaseFeeStroops(effectiveFee, operations.length) : null;
                if (transaction_mode === "normal") {
                     workerLog(
-                         `[${botName}] max fee bid ${effectiveFee.toFixed(7)} ÷ ${operations.length} operation = ${normalBaseFeeStroops} stroops/Operations.`,
+                         `[${botName}] max fee bid ${effectiveFee.toFixed(7)} Ã· ${operations.length} operation = ${normalBaseFeeStroops} stroops/Operations.`,
                          "info"
                     );
                }
@@ -15142,7 +15238,7 @@ async function executeBot(config) {
                                    networkPassphrase: NETWORK_PASSPHRASE,
                               }
                          );
-                         applyTransactionBounds(txBuilder, minTime, maxTime);
+                         applyTransactionBounds(txBuilder, minTime, maxTime, exactLedgerBounds, botName);
 
                          if (custom_memo) {
                               let finalMemo = custom_memo;
@@ -15174,7 +15270,7 @@ async function executeBot(config) {
                          }
                          return { helperIdx: helperNumber, transaction: innerTx, signed_xdr: innerTx.toEnvelope().toXDR("base64"), helperPub: helper.pub };
                     } catch (error) {
-                         workerLog(`[${botName}] ⚠️ Helper ${helperNumber} dilewati saat build/sign: ${error.message}`, "warning");
+                         workerLog(`[${botName}] âš ï¸ Helper ${helperNumber} dilewati saat build/sign: ${error.message}`, "warning");
                          return null;
                     }
                });
@@ -15272,18 +15368,18 @@ async function executeBot(config) {
                          transactionsToSubmit = await loadSignedTransactionsFromRedis(botName);
                          if (transactionsToSubmit.length) {
                               workerLog(
-                                   `[${botName}] 📦 Loaded ${transactionsToSubmit.length} signed XDR dari Redis lokal worker.`,
+                                   `[${botName}] ðŸ“¦ Loaded ${transactionsToSubmit.length} signed XDR dari Redis lokal worker.`,
                                    "info"
                               );
                          }
                     } catch (error) {
-                         workerLog(`[${botName}] ⚠️ Gagal load signed XDR dari Redis: ${error.message}`, "warning");
+                         workerLog(`[${botName}] âš ï¸ Gagal load signed XDR dari Redis: ${error.message}`, "warning");
                     }
                }
 
                if (!transactionsToSubmit.length && signedTransactions.length) {
                     transactionsToSubmit = signedTransactions;
-                    workerLog(`[${botName}] ⚠️ Fallback submit dari memory karena Redis XDR kosong.`, "warning");
+                    workerLog(`[${botName}] âš ï¸ Fallback submit dari memory karena Redis XDR kosong.`, "warning");
                }
 
                if (!transactionsToSubmit.length) {
@@ -15296,13 +15392,13 @@ async function executeBot(config) {
                // Status tetap diperbarui, tetapi non-blocking agar burst dimulai secepat mungkin.
                updateBotStatus(botName, "executing", "Submitting signed XDR...").catch(() => {});
                workerLog(
-                    `[${botName}] 🚀 Submit burst ${SUBMIT_ENDPOINT_MODE.toUpperCase()} dari signed XDR: ${transactionsToSubmit.length} tx, target ${SUBMIT_BEFORE_MS}ms sebelum unlock.`,
+                    `[${botName}] ðŸš€ Submit burst ${SUBMIT_ENDPOINT_MODE.toUpperCase()} dari signed XDR: ${transactionsToSubmit.length} tx, target ${SUBMIT_BEFORE_MS}ms sebelum unlock.`,
                     "warning"
                );
                submitPromise = submitBurstWaves(transactionsToSubmit);
                await submitPromise;
                workerLog(
-                    `[${botName}] 📬 Submit signed XDR ${SUBMIT_ENDPOINT_MODE.toUpperCase()} selesai; ${SUBMIT_ENDPOINT_MODE === "async" ? "menunggu konfirmasi ledger" : "hasil sync sudah diterima"}`,
+                    `[${botName}] ðŸ“¬ Submit signed XDR ${SUBMIT_ENDPOINT_MODE.toUpperCase()} selesai; ${SUBMIT_ENDPOINT_MODE === "async" ? "menunggu konfirmasi ledger" : "hasil sync sudah diterima"}`,
                     "info"
                );
           };
@@ -15313,13 +15409,13 @@ async function executeBot(config) {
                }
                const delayMs = Math.max(0, submitAtMs - getSystemTime().getTime());
                workerLog(
-                    `[${botName}] ⏳ Signed XDR siap (${signedTransactionCount || signedTransactions.length} tx). Menunggu ${delayMs}ms lalu submit paralel.`,
+                    `[${botName}] â³ Signed XDR siap (${signedTransactionCount || signedTransactions.length} tx). Menunggu ${delayMs}ms lalu submit paralel.`,
                     "info"
                );
                submitTimer = setTimeout(() => {
                     submitTimer = null;
                     submitPromise = runPreSignedSubmit().catch(async (error) => {
-                         workerLog(`[${botName}] ❌ Submit signed XDR error: ${error.message}`, "error");
+                         workerLog(`[${botName}] âŒ Submit signed XDR error: ${error.message}`, "error");
                          await updateBotStatus(botName, "error", error.message).catch(() => {});
                          await sendFailureNotificationOnce(error.message);
                          releaseLoadingLock(botName);
@@ -15351,7 +15447,7 @@ async function executeBot(config) {
                const actualBeforeMs = Math.max(0, unlockTimeMs - startedAt);
 
                workerLog(
-                    `[${botName}] 🚀 Classic submit ${waveLabel}: ${transactions.length} tx, actual ${actualBeforeMs}ms sebelum unlock, target ${SUBMIT_BEFORE_MS}ms, horizon=${submitTargets.length}, oneServer100=${submitTargets.length === 1 ? "yes" : "no"}, mode=${SUBMIT_ENDPOINT_MODE.toUpperCase()}, toAll=${CLASSIC_SUBMIT_TO_ALL_HORIZONS ? "yes" : "no"}.`,
+                    `[${botName}] ðŸš€ Classic submit ${waveLabel}: ${transactions.length} tx, actual ${actualBeforeMs}ms sebelum unlock, target ${SUBMIT_BEFORE_MS}ms, horizon=${submitTargets.length}, oneServer100=${submitTargets.length === 1 ? "yes" : "no"}, mode=${SUBMIT_ENDPOINT_MODE.toUpperCase()}, toAll=${CLASSIC_SUBMIT_TO_ALL_HORIZONS ? "yes" : "no"}.`,
                     "warning"
                );
 
@@ -15370,7 +15466,7 @@ async function executeBot(config) {
 
                     if (SUBMIT_VERBOSE_LOGS || CLASSIC_SUBMIT_LOG_EACH_TX) {
                          workerLog(
-                              `[${botName}] 📤 Submit ${waveLabel} ...${helperShort} to ${targets.join(", ")}`,
+                              `[${botName}] ðŸ“¤ Submit ${waveLabel} ...${helperShort} to ${targets.join(", ")}`,
                               "info"
                          );
                     }
@@ -15407,7 +15503,7 @@ async function executeBot(config) {
                const durationMs = Date.now() - startedAt;
 
                workerLog(
-                    `[${botName}] ✅ Classic submit ${waveLabel} selesai: duration=${durationMs}ms accepted=${acceptedCount} finalized=${finalizedCount} failed=${failedCount}.`,
+                    `[${botName}] âœ… Classic submit ${waveLabel} selesai: duration=${durationMs}ms accepted=${acceptedCount} finalized=${finalizedCount} failed=${failedCount}.`,
                     acceptedCount > 0 ? "success" : "warning"
                );
 
@@ -15440,7 +15536,7 @@ async function executeBot(config) {
                ).slice(0, Math.max(1, botMaxSubmitHorizons));
 
                workerLog(
-                    `[${botName}] 🔎 Verifikasi final ${hashes.length} hash async ke Horizon...`,
+                    `[${botName}] ðŸ”Ž Verifikasi final ${hashes.length} hash async ke Horizon...`,
                     "info"
                );
 
@@ -15463,7 +15559,7 @@ async function executeBot(config) {
                               const status = getHttpErrorStatus(error);
                               if (status && Number(status) !== 404) {
                                    workerLog(
-                                        `[${botName}] ⚠️ Verifikasi ${hash.slice(0, 12)}... via ${horizonUrl} gagal HTTP ${status}`,
+                                        `[${botName}] âš ï¸ Verifikasi ${hash.slice(0, 12)}... via ${horizonUrl} gagal HTTP ${status}`,
                                         "warning"
                                    );
                               }
@@ -15489,13 +15585,13 @@ async function executeBot(config) {
                               transactionSuccess = true;
                               successfulHash = successfulHash || item.hash;
                               workerLog(
-                                   `[${botName}] ✅ Ledger confirmed SUCCESS: ${item.hash} ledger ${item.ledger ?? "-"}`,
+                                   `[${botName}] âœ… Ledger confirmed SUCCESS: ${item.hash} ledger ${item.ledger ?? "-"}`,
                                    "success"
                               );
                          } else if (item.state === "failed") {
                               confirmedFailed += 1;
                               workerLog(
-                                   `[${botName}] ❌ Ledger confirmed FAILED: ${item.hash} ledger ${item.ledger ?? "-"}`,
+                                   `[${botName}] âŒ Ledger confirmed FAILED: ${item.hash} ledger ${item.ledger ?? "-"}`,
                                    "error"
                               );
                          } else {
@@ -15512,7 +15608,7 @@ async function executeBot(config) {
                unresolved = pendingHashes.length;
                if (unresolved > 0) {
                     workerLog(
-                         `[${botName}] ⚠️ ${unresolved} transaksi async belum ditemukan di Horizon setelah verifikasi final; tidak dihitung sukses.`,
+                         `[${botName}] âš ï¸ ${unresolved} transaksi async belum ditemukan di Horizon setelah verifikasi final; tidak dihitung sukses.`,
                          "warning"
                     );
                }
@@ -15563,12 +15659,12 @@ async function executeBot(config) {
                     if (!hasPinged && diffToUnlock <= LOAD_BEFORE_MS) {
                          hasPinged = true;
                          await updateBotStatus(botName, "active", "Queued for loading...");
-                         workerLog(`[${botName}] ⏳ Waiting in queue for helper loading...`, "info");
+                         workerLog(`[${botName}] â³ Waiting in queue for helper loading...`, "info");
 
                          await acquireLoadingLock(botName, utcUnlockTime.toISOString(), horizon_url);
 
                          await updateBotStatus(botName, "active", "Loading...");
-                         workerLog(`[${botName}] 🔍 Pinging horizons within execution window...`, "info");
+                         workerLog(`[${botName}] ðŸ” Pinging horizons within execution window...`, "info");
 
                          finalOnlineServers = (await findFastHorizons(horizonCandidates, botName)).slice(
                               0,
@@ -15578,10 +15674,10 @@ async function executeBot(config) {
                               releaseLoadingLock(botName);
                               throw new Error("No horizons online");
                          }
-                         workerLog(`[${botName}] ✅ Fast Horizon order: ${finalOnlineServers.join(", ")}`, "success");
+                         workerLog(`[${botName}] âœ… Fast Horizon order: ${finalOnlineServers.join(", ")}`, "success");
 
                          if (helpers.length === 0) {
-                              workerLog(`[${botName}] 📡 Loading ${selectedSponsors.length} helpers...`, "info");
+                              workerLog(`[${botName}] ðŸ“¡ Loading ${selectedSponsors.length} helpers...`, "info");
                               helpers = await loadAllHelpersAsync(
                                    finalOnlineServers,
                                    selectedSponsors,
@@ -15602,7 +15698,7 @@ async function executeBot(config) {
 
                          if (helpers.length < selectedSponsors.length) {
                               workerLog(
-                                   `[${botName}] ⚠️ Only ${helpers.length}/${selectedSponsors.length} helpers loaded, continuing anyway`,
+                                   `[${botName}] âš ï¸ Only ${helpers.length}/${selectedSponsors.length} helpers loaded, continuing anyway`,
                                    "warning"
                               );
                          }
@@ -15610,25 +15706,28 @@ async function executeBot(config) {
                          releaseLoadingLock(botName);
                     }
 
-                    if (hasPinged && !hasBuilt && (BUILD_AFTER_LOAD || diffToUnlock <= BUILD_BEFORE_MS)) {
+                    const shouldBuildSignedXdr = EXACT_LEDGER_MODE
+                         ? diffToUnlock <= EXACT_LEDGER_MONITOR_BEFORE_MS
+                         : (BUILD_AFTER_LOAD || diffToUnlock <= BUILD_BEFORE_MS);
+                    if (hasPinged && !hasBuilt && shouldBuildSignedXdr) {
                          hasBuilt = true;
                          await updateBotStatus(botName, "preparing", "Signing & Streaming...");
                          workerLog(
-                              `[${botName}] 🔨 Building transactions ${BUILD_AFTER_LOAD ? "right after helper load" : "within submit window"}...`,
+                              `[${botName}] ðŸ”¨ Building transactions ${EXACT_LEDGER_MODE ? "with exact ledger monitoring" : (BUILD_AFTER_LOAD ? "right after helper load" : "within submit window")}...`,
                               "info"
                          );
 
                          signedTransactions = await buildAndSignTransactions(0n);
                          signedTransactionCount = signedTransactions.length;
                          const savedToRedis = await saveSignedTransactionsToRedis(botName, signedTransactions, submitAtMs).catch((error) => {
-                              workerLog(`[${botName}] ⚠️ Gagal simpan signed XDR ke Redis lokal: ${error.message}`, "warning");
+                              workerLog(`[${botName}] âš ï¸ Gagal simpan signed XDR ke Redis lokal: ${error.message}`, "warning");
                               return false;
                          });
                          if (savedToRedis) {
                               signedTransactions = [];
-                              workerLog(`[${botName}] ✅ Built & saved ${signedTransactionCount} signed XDR ke Redis lokal worker; memory XDR dibersihkan.`, "success");
+                              workerLog(`[${botName}] âœ… Built & saved ${signedTransactionCount} signed XDR ke Redis lokal worker; memory XDR dibersihkan.`, "success");
                          } else {
-                              workerLog(`[${botName}] ⚠️ Built & saved ${signedTransactionCount} signed XDR in memory fallback`, "warning");
+                              workerLog(`[${botName}] âš ï¸ Built & saved ${signedTransactionCount} signed XDR in memory fallback`, "warning");
                          }
                          schedulePreSignedSubmit();
                      }
@@ -15637,7 +15736,7 @@ async function executeBot(config) {
                      }
                     if (currentTime >= stopTime.getTime() && !hasProcessedPostTx) {
                          hasProcessedPostTx = true;
-                         workerLog(`[${botName}] ⏹️ Analyzing final status...`, "info");
+                         workerLog(`[${botName}] â¹ï¸ Analyzing final status...`, "info");
 
                          if (submitPromise) {
                               await submitPromise.catch((error) => {
@@ -15651,7 +15750,7 @@ async function executeBot(config) {
                          if (submittedAsyncHashes.size > 0) {
                               const verification = await verifyAsyncSubmittedTransactions();
                               workerLog(
-                                   `[${botName}] 📊 Async final: success ${verification.confirmedSuccess}, failed ${verification.confirmedFailed}, unresolved ${verification.unresolved}`,
+                                   `[${botName}] ðŸ“Š Async final: success ${verification.confirmedSuccess}, failed ${verification.confirmedFailed}, unresolved ${verification.unresolved}`,
                                    verification.confirmedSuccess > 0 ? "success" : "warning"
                               );
                          }
@@ -15662,9 +15761,9 @@ async function executeBot(config) {
                                         ? "claimed"
                                         : "sent";
                               statusMessage = finalStatus === "claimed" ? "Claimed successfully" : "Sent successfully";
-                              workerLog(`[${botName}] ✅ Final Status: ${finalStatus}`, "success");
+                              workerLog(`[${botName}] âœ… Final Status: ${finalStatus}`, "success");
                          } else {
-                              workerLog(`[${botName}] ❌ Final Status: lost (no successful transactions)`, "error");
+                              workerLog(`[${botName}] âŒ Final Status: lost (no successful transactions)`, "error");
                          }
 
                          await updateBotStatus(botName, finalStatus, statusMessage);
@@ -15678,7 +15777,7 @@ async function executeBot(config) {
 
                          if (sweepHelpersEnabled && outerFeePayerKeypair) {
                               workerLog(
-                                   `[${botName}] 🔄 Auto-Sweep aktif. Menunggu 1 detik sebelum menarik saldo...`,
+                                   `[${botName}] ðŸ”„ Auto-Sweep aktif. Menunggu 1 detik sebelum menarik saldo...`,
                                    "info"
                               );
 
@@ -15716,7 +15815,7 @@ async function executeBot(config) {
                               );
                          } else {
                               workerLog(
-                                   `[${botName}] ℹ️ Auto-Sweep tidak aktif atau dompet fee tidak ditemukan.`,
+                                   `[${botName}] â„¹ï¸ Auto-Sweep tidak aktif atau dompet fee tidak ditemukan.`,
                                    "info"
                               );
                          }
@@ -15750,7 +15849,7 @@ async function executeBot(config) {
                               });
                               if (fundingFeeLossInfo) {
                                    workerLog(
-                                        `[${botName}] 💸 Coin Anda Terpotong: ${fundingFeeLossInfo.loss_pi} PI (Saldo ${fundingFeeLossInfo.before_pi} → ${fundingFeeLossInfo.after_pi} PI)`,
+                                        `[${botName}] ðŸ’¸ Coin Anda Terpotong: ${fundingFeeLossInfo.loss_pi} PI (Saldo ${fundingFeeLossInfo.before_pi} â†’ ${fundingFeeLossInfo.after_pi} PI)`,
                                         Number.parseFloat(fundingFeeLossInfo.loss_pi) > 0 ? "warning" : "info"
                                    );
                               }
@@ -15764,10 +15863,10 @@ async function executeBot(config) {
                               await sendFailureNotificationOnce(statusMessage);
                          }
 
-                         workerLog(`[${botName}] 📌 Status akhir terkunci: ${finalStatus}`, "success");
+                         workerLog(`[${botName}] ðŸ“Œ Status akhir terkunci: ${finalStatus}`, "success");
                          await releaseBotSequenceReservations(botName);
                          await deleteSignedTransactionsFromRedis(botName).catch((error) => {
-                              workerLog(`[${botName}] ⚠️ Gagal hapus signed XDR Redis: ${error.message}`, "warning");
+                              workerLog(`[${botName}] âš ï¸ Gagal hapus signed XDR Redis: ${error.message}`, "warning");
                          });
 
                          if (ledgerStreamCloser) {
@@ -15781,7 +15880,7 @@ async function executeBot(config) {
                          }, 5000);
                     }
                } catch (error) {
-                    workerLog(`[${botName}] ❌ Runtime error: ${error.message}`, "error");
+                    workerLog(`[${botName}] âŒ Runtime error: ${error.message}`, "error");
 
                     await updateBotStatus(botName, "error", error.message);
                     await sendFailureNotificationOnce(error.message);
@@ -15789,7 +15888,7 @@ async function executeBot(config) {
                     releaseLoadingLock(botName);
                     await releaseBotSequenceReservations(botName);
                     await deleteSignedTransactionsFromRedis(botName).catch((cleanupError) => {
-                         workerLog(`[${botName}] ⚠️ Gagal cleanup signed XDR Redis: ${cleanupError.message}`, "warning");
+                         workerLog(`[${botName}] âš ï¸ Gagal cleanup signed XDR Redis: ${cleanupError.message}`, "warning");
                     });
 
                     if (ledgerStreamCloser) {
@@ -15815,7 +15914,7 @@ async function executeBot(config) {
                currentStatus: "active",
           });
      } catch (error) {
-          workerLog(`[${botName}] ❌ Fatal initialization error: ${error.message}`, "error");
+          workerLog(`[${botName}] âŒ Fatal initialization error: ${error.message}`, "error");
 
           await updateBotStatus(botName, "error", error.message);
 
@@ -16029,7 +16128,7 @@ async function loadSubmitHorizonPool(primaryHorizonUrl, botName) {
 
 async function syncCacheWithRedis() {
      if (SYNC_VERBOSE_LOGS) {
-          workerLog(`🔄 Auto-syncing with Redis Database...`, "info");
+          workerLog(`ðŸ”„ Auto-syncing with Redis Database...`, "info");
      }
      await refreshRuntimeSettings();
      await migrateLegacyBotsForWorker();
@@ -16042,7 +16141,7 @@ async function syncCacheWithRedis() {
      });
 
      if (SYNC_VERBOSE_LOGS) {
-          workerLog(`📊 Total bots in Redis: ${allBots.length}, Assigned to me: ${myBots.length}`, "info");
+          workerLog(`ðŸ“Š Total bots in Redis: ${allBots.length}, Assigned to me: ${myBots.length}`, "info");
      }
 
      const newCache = new Map();
@@ -16055,7 +16154,7 @@ async function syncCacheWithRedis() {
           const assignedWorker = dbBot ? dbBot.worker_name || "Worker1" : null;
           if (!dbBot || dbBot.status === "deleted" || assignedWorker !== WORKER_NAME) {
                if (activeBots.has(botName)) {
-                    workerLog(`🛑 Stopping deleted/reassigned bot: ${botName}`, "info");
+                    workerLog(`ðŸ›‘ Stopping deleted/reassigned bot: ${botName}`, "info");
                     stopBot(botName);
                }
           }
@@ -16067,7 +16166,7 @@ async function syncCacheWithRedis() {
 
           if (!botsCache.has(botName)) {
                if (isRuntimeBotStatus(bot.status) && !activeBots.has(botName) && !startingBots.has(botName)) {
-                    workerLog(`📥 New bot detected: ${botName}`, "info");
+                    workerLog(`ðŸ“¥ New bot detected: ${botName}`, "info");
                     sendNewBotTelegram(bot.bot_name, bot.amount, bot.custom_memo);
                     processBot(bot);
                }
@@ -16087,28 +16186,28 @@ async function syncCacheWithRedis() {
                if (oldBot.status !== bot.status) {
                     if (isRuntimeBotStatus(bot.status)) {
                          if (!activeBots.has(botName) && !startingBots.has(botName)) {
-                              workerLog(`▶️ Resuming bot: ${botName}`, "info");
+                              workerLog(`â–¶ï¸ Resuming bot: ${botName}`, "info");
                               processBot(bot);
                          } else {
-                              workerLog(`▶️ Bot already active: ${botName}`, "info");
+                              workerLog(`â–¶ï¸ Bot already active: ${botName}`, "info");
                               resumeBot(botName);
                          }
                     } else if (bot.status === "paused") {
-                         workerLog(`⏸️ Pausing bot: ${botName}`, "info");
+                         workerLog(`â¸ï¸ Pausing bot: ${botName}`, "info");
                          pauseBot(botName);
                     }
                } else {
                     if (isRuntimeBotStatus(bot.status) && !activeBots.has(botName) && !startingBots.has(botName)) {
-                         workerLog(`▶️ Starting active bot: ${botName}`, "info");
+                         workerLog(`â–¶ï¸ Starting active bot: ${botName}`, "info");
                          processBot(bot);
                     } else if (hasBotConfigChanged(oldBot, bot)) {
                          if (activeBots.has(botName)) {
                               workerLog(
-                                   `⚠️ Config changed for ${botName}, current active run tetap dilanjutkan tanpa restart.`,
+                                   `âš ï¸ Config changed for ${botName}, current active run tetap dilanjutkan tanpa restart.`,
                                    "warning"
                               );
                          } else if (bot.status === "active") {
-                              workerLog(`⚠️ Config changed for ${botName}, starting inactive bot...`, "warning");
+                              workerLog(`âš ï¸ Config changed for ${botName}, starting inactive bot...`, "warning");
                               processBot(bot);
                          }
                     }
@@ -16118,7 +16217,7 @@ async function syncCacheWithRedis() {
 
      botsCache = newCache;
      if (SYNC_VERBOSE_LOGS) {
-          workerLog(`✅ Sync complete: ${botsCache.size} total bots, ${activeBots.size} active`, "info");
+          workerLog(`âœ… Sync complete: ${botsCache.size} total bots, ${activeBots.size} active`, "info");
      }
 }
 
@@ -16139,7 +16238,7 @@ async function processBot(bot) {
                     ? `Bot ${bot_name} will retry on next sync.`
                     : `Bot ${bot_name} cannot be started.`;
                workerLog(
-                    `${serverConfig.retryable ? "⚠️" : "❌"} ${message}. ${nextAction}`,
+                    `${serverConfig.retryable ? "âš ï¸" : "âŒ"} ${message}. ${nextAction}`,
                     serverConfig.retryable ? "warning" : "error"
                );
 
@@ -16154,7 +16253,7 @@ async function processBot(bot) {
           }
 
           if (serverConfig.source === "cache") {
-               workerLog(`⚠️ ${serverConfig.error}`, "warning");
+               workerLog(`âš ï¸ ${serverConfig.error}`, "warning");
           }
 
           const userEmail = bot.username ? await fetchUserEmail(bot.username) : null;
@@ -16261,18 +16360,18 @@ async function checkWebServiceConnectivity() {
      try {
           const response = await fetchWithRetries(`${WEB_SERVICE_URL}/health`);
           if (response.ok) {
-               workerLog(`✅ Web service connection established to ${WEB_SERVICE_URL}`, "success");
+               workerLog(`âœ… Web service connection established to ${WEB_SERVICE_URL}`, "success");
                return true;
           } else {
                workerLog(
-                    `⚠️ Web service at ${WEB_SERVICE_URL} responded with status code ${response.status}.`,
+                    `âš ï¸ Web service at ${WEB_SERVICE_URL} responded with status code ${response.status}.`,
                     "warning"
                );
                return false;
           }
      } catch (error) {
           workerLog(
-               `❌ CRITICAL ERROR: Failed to connect to web service at ${WEB_SERVICE_URL}. Error: ${describeFetchError(error)}`,
+               `âŒ CRITICAL ERROR: Failed to connect to web service at ${WEB_SERVICE_URL}. Error: ${describeFetchError(error)}`,
                "error"
           );
           return false;
@@ -16281,7 +16380,7 @@ async function checkWebServiceConnectivity() {
 
 (async () => {
      try {
-          workerLog(`🚀 ${WORKER_NAME} starting...`, "info");
+          workerLog(`ðŸš€ ${WORKER_NAME} starting...`, "info");
 
           const redisReady = await ensureRedisConnected();
 
@@ -16291,11 +16390,15 @@ async function checkWebServiceConnectivity() {
                await refreshRuntimeSettings();
           }
 
-          workerLog(`📦 Fee bump sponsors loaded from bump.txt: ${FEE_BUMP_SPONSORS.length}`, "info");
-          workerLog(`⏱️ Auto-sync interval: ${SYNC_INTERVAL_MS / 1000} seconds`, "info");
+          workerLog(`ðŸ“¦ Fee bump sponsors loaded from bump.txt: ${FEE_BUMP_SPONSORS.length}`, "info");
+          workerLog(`â±ï¸ Auto-sync interval: ${SYNC_INTERVAL_MS / 1000} seconds`, "info");
           workerLog(
-               `⚡ Fast claim WIN engine: load=${LOAD_BEFORE_MS}ms build=${BUILD_AFTER_LOAD ? "after-load" : `${BUILD_BEFORE_MS}ms`} submit=${SUBMIT_BEFORE_MS}ms timeout=${TRANSACTION_TIMEOUT_MS}ms sequenceManager=${SEQUENCE_MANAGER_ENABLED} submitMode=${SUBMIT_ENDPOINT_MODE} submitConcurrency=${SUBMIT_CONCURRENCY} submitWaves=${SUBMIT_WAVE_COUNT} waveDelay=${SUBMIT_WAVE_DELAY_MS}ms httpMaxSockets=${SUBMIT_HTTP_MAX_SOCKETS} httpTimeout=${SUBMIT_HTTP_TIMEOUT_MS}ms tick=${FAST_TICK_MS}ms maxHorizons=${formatSubmitHorizonLimit(MAX_SUBMIT_HORIZONS)} workerServerOnly=${WORKER_SERVER_ONLY} oneServer100=${MAX_SUBMIT_HORIZONS === 1 && HELPERS_PER_WORKER === 100}`,
+               `âš¡ Fast claim WIN engine: load=${LOAD_BEFORE_MS}ms build=${BUILD_AFTER_LOAD ? "after-load" : `${BUILD_BEFORE_MS}ms`} submit=${SUBMIT_BEFORE_MS}ms timeout=${TRANSACTION_TIMEOUT_MS}ms sequenceManager=${SEQUENCE_MANAGER_ENABLED} submitMode=${SUBMIT_ENDPOINT_MODE} submitConcurrency=${SUBMIT_CONCURRENCY} submitWaves=${SUBMIT_WAVE_COUNT} waveDelay=${SUBMIT_WAVE_DELAY_MS}ms httpMaxSockets=${SUBMIT_HTTP_MAX_SOCKETS} httpTimeout=${SUBMIT_HTTP_TIMEOUT_MS}ms tick=${FAST_TICK_MS}ms maxHorizons=${formatSubmitHorizonLimit(MAX_SUBMIT_HORIZONS)} workerServerOnly=${WORKER_SERVER_ONLY} oneServer100=${MAX_SUBMIT_HORIZONS === 1 && HELPERS_PER_WORKER === 100}`,
                "info"
+          );
+          workerLog(
+               `ðŸŽ¯ Exact Ledger Mode: ${EXACT_LEDGER_MODE ? `ON monitor=${EXACT_LEDGER_MONITOR_BEFORE_MS}ms avg=${EXACT_LEDGER_CLOSE_AVG_MS}ms maxOffset=${EXACT_LEDGER_MAX_OFFSET}` : "OFF"}`,
+               EXACT_LEDGER_MODE ? "success" : "info"
           );
           const telegramSettings = redisReady ? await getTelegramSettings() : { botToken: "", chatId: "" };
           workerLog(`Telegram Redis settings: ${telegramSettings.botToken && telegramSettings.chatId ? "Configured" : "Not configured"}`, "info");
@@ -16314,18 +16417,18 @@ async function checkWebServiceConnectivity() {
                     }
                     await syncCacheWithRedis();
                } catch (error) {
-                    workerLog(`❌ Sync error: ${error.message}`, "error");
+                    workerLog(`âŒ Sync error: ${error.message}`, "error");
                }
           }, SYNC_INTERVAL_MS);
 
           const server = app.listen(PORT, () => {
-               workerLog(`✅ ${WORKER_NAME} ready on port ${PORT}`, "info");
+               workerLog(`âœ… ${WORKER_NAME} ready on port ${PORT}`, "info");
           });
           server.on("error", (error) => {
                workerLog(`Worker HTTP server error on port ${PORT}: ${error.message}`, "error");
           });
      } catch (error) {
-          workerLog(`❌ Startup error: ${error.message}`, "error");
+          workerLog(`âŒ Startup error: ${error.message}`, "error");
      }
 })();
 PILEAKERS_INDEX_JS
@@ -16669,6 +16772,10 @@ HORIZON_PING_TIMEOUT_MS=5000
 HORIZON_REQUEST_DELAY_MS=150
 HORIZON_RATE_LIMIT_COOLDOWN_MS=20000
 HORIZON_RATE_LIMIT_JITTER_MS=500
+EXACT_LEDGER_MODE=true
+EXACT_LEDGER_MONITOR_BEFORE_MS=15000
+EXACT_LEDGER_CLOSE_AVG_MS=5000
+EXACT_LEDGER_MAX_OFFSET=1
 # 1 = satu server Horizon untuk 100 TX per worker. 0 = unlimited.
 MAX_SUBMIT_HORIZONS=1
 HELPER_LOAD_CONCURRENCY=5
