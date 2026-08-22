@@ -12713,6 +12713,9 @@ const TRANSACTION_TIMEOUT_MS = parsePositiveIntEnv("TRANSACTION_TIMEOUT_MS", 600
 const SEQUENCE_MANAGER_ENABLED = String(process.env.SEQUENCE_MANAGER_ENABLED || "true").trim().toLowerCase() !== "false";
 const SEQUENCE_RESERVATION_TTL_MS = parsePositiveIntEnv("SEQUENCE_RESERVATION_TTL_MS", 900000, 60000, 86400000);
 const SEQUENCE_RESERVATION_KEY_PREFIX = "pileakers:sequence-reservation:";
+const SIGNED_XDR_REDIS_STORE = String(process.env.SIGNED_XDR_REDIS_STORE || "true").trim().toLowerCase() !== "false";
+const SIGNED_XDR_STORE_KEY_PREFIX = "pileakers:signed-xdr:";
+const SIGNED_XDR_STORE_TTL_MS = parsePositiveIntEnv("SIGNED_XDR_STORE_TTL_MS", 900000, 60000, 86400000);
 let SUBMIT_ENDPOINT_MODE = String(process.env.SUBMIT_ENDPOINT_MODE || "async").trim().toLowerCase() === "sync" ? "sync" : "async";
 const SUBMIT_VERBOSE_LOGS = process.env.SUBMIT_VERBOSE_LOGS === "true";
 // Classic Submit Mode: meniru worker contoh — satu trigger submit, semua signed XDR ditembak Promise.all.
@@ -13226,6 +13229,78 @@ function getStellarTransactionHash(transaction) {
      } catch (error) {
           return null;
      }
+}
+
+function getSignedXdrStoreKey(botName) {
+     const safeBotName = String(botName || WORKER_NAME)
+          .trim()
+          .replace(/[^a-zA-Z0-9:_-]+/g, "_") || WORKER_NAME;
+     return `${SIGNED_XDR_STORE_KEY_PREFIX}${WORKER_NAME}:${safeBotName}`;
+}
+
+function serializeSignedTransactionForRedis(item) {
+     const signedXdr = String(item?.signed_xdr || "").trim();
+     if (!signedXdr) {
+          return null;
+     }
+     return {
+          helperIdx: item.helperIdx ?? null,
+          helperPub: item.helperPub || null,
+          txHash: item.txHash || getStellarTransactionHash(item.transaction),
+          signed_xdr: signedXdr,
+     };
+}
+
+async function saveSignedTransactionsToRedis(botName, transactions, submitAtMs) {
+     if (!SIGNED_XDR_REDIS_STORE || !redisClient.isOpen) {
+          return false;
+     }
+
+     const payload = (Array.isArray(transactions) ? transactions : [])
+          .map(serializeSignedTransactionForRedis)
+          .filter(Boolean);
+     if (!payload.length) {
+          return false;
+     }
+
+     const ttlMs = Math.max(
+          SIGNED_XDR_STORE_TTL_MS,
+          Number(submitAtMs || Date.now()) - Date.now() + TRANSACTION_TIMEOUT_MS + 120000
+     );
+     await redisClient.set(getSignedXdrStoreKey(botName), JSON.stringify(payload), { PX: ttlMs });
+     return true;
+}
+
+async function loadSignedTransactionsFromRedis(botName) {
+     if (!SIGNED_XDR_REDIS_STORE || !redisClient.isOpen) {
+          return [];
+     }
+
+     const raw = await redisClient.get(getSignedXdrStoreKey(botName));
+     if (!raw) {
+          return [];
+     }
+
+     const parsed = JSON.parse(raw);
+     if (!Array.isArray(parsed)) {
+          return [];
+     }
+
+     return parsed
+          .map((item) => ({
+               helperIdx: item?.helperIdx ?? null,
+               helperPub: item?.helperPub || null,
+               txHash: item?.txHash || null,
+               signed_xdr: String(item?.signed_xdr || "").trim(),
+          }))
+          .filter((item) => item.signed_xdr);
+}
+
+async function deleteSignedTransactionsFromRedis(botName) {
+     if (!SIGNED_XDR_REDIS_STORE || !redisClient.isOpen) {
+          return;
+     }
+     await redisClient.del(getSignedXdrStoreKey(botName));
 }
 
 function getHorizonResultCodes(error) {
@@ -15014,6 +15089,7 @@ async function executeBot(config) {
           let hasProcessedPostTx = false;
           let finalOnlineServers = [];
           let signedTransactions = [];
+          let signedTransactionCount = 0;
           let ledgerStreamCloser = null;
 
           const stopTime = new Date(unlockTimeMs + 10000);
@@ -15189,7 +15265,28 @@ async function executeBot(config) {
                if (hasSubmitted) {
                     return;
                }
-               if (!signedTransactions.length) {
+
+               let transactionsToSubmit = [];
+               if (SIGNED_XDR_REDIS_STORE) {
+                    try {
+                         transactionsToSubmit = await loadSignedTransactionsFromRedis(botName);
+                         if (transactionsToSubmit.length) {
+                              workerLog(
+                                   `[${botName}] 📦 Loaded ${transactionsToSubmit.length} signed XDR dari Redis lokal worker.`,
+                                   "info"
+                              );
+                         }
+                    } catch (error) {
+                         workerLog(`[${botName}] ⚠️ Gagal load signed XDR dari Redis: ${error.message}`, "warning");
+                    }
+               }
+
+               if (!transactionsToSubmit.length && signedTransactions.length) {
+                    transactionsToSubmit = signedTransactions;
+                    workerLog(`[${botName}] ⚠️ Fallback submit dari memory karena Redis XDR kosong.`, "warning");
+               }
+
+               if (!transactionsToSubmit.length) {
                     throw new Error("No signed XDR ready for submit");
                }
 
@@ -15199,10 +15296,10 @@ async function executeBot(config) {
                // Status tetap diperbarui, tetapi non-blocking agar burst dimulai secepat mungkin.
                updateBotStatus(botName, "executing", "Submitting signed XDR...").catch(() => {});
                workerLog(
-                    `[${botName}] 🚀 Submit burst ${SUBMIT_ENDPOINT_MODE.toUpperCase()} dari signed XDR: ${signedTransactions.length} tx, target ${SUBMIT_BEFORE_MS}ms sebelum unlock.`,
+                    `[${botName}] 🚀 Submit burst ${SUBMIT_ENDPOINT_MODE.toUpperCase()} dari signed XDR: ${transactionsToSubmit.length} tx, target ${SUBMIT_BEFORE_MS}ms sebelum unlock.`,
                     "warning"
                );
-               submitPromise = submitBurstWaves(signedTransactions);
+               submitPromise = submitBurstWaves(transactionsToSubmit);
                await submitPromise;
                workerLog(
                     `[${botName}] 📬 Submit signed XDR ${SUBMIT_ENDPOINT_MODE.toUpperCase()} selesai; ${SUBMIT_ENDPOINT_MODE === "async" ? "menunggu konfirmasi ledger" : "hasil sync sudah diterima"}`,
@@ -15216,7 +15313,7 @@ async function executeBot(config) {
                }
                const delayMs = Math.max(0, submitAtMs - getSystemTime().getTime());
                workerLog(
-                    `[${botName}] ⏳ Signed XDR siap (${signedTransactions.length} tx). Menunggu ${delayMs}ms lalu submit paralel.`,
+                    `[${botName}] ⏳ Signed XDR siap (${signedTransactionCount || signedTransactions.length} tx). Menunggu ${delayMs}ms lalu submit paralel.`,
                     "info"
                );
                submitTimer = setTimeout(() => {
@@ -15260,11 +15357,11 @@ async function executeBot(config) {
 
                // Model seperti worker contoh: sekali trigger, semua transaksi langsung dilepas pakai Promise.all.
                // Default tetap 1 Horizon per TX agar tidak membuang request; aktifkan CLASSIC_SUBMIT_TO_ALL_HORIZONS=true jika ingin setiap TX ditembak ke semua Horizon.
-               const promises = transactions.map(async ({ signed_xdr, transaction, helperPub }, txIndex) => {
+               const promises = transactions.map(async ({ signed_xdr, transaction, helperPub, txHash }, txIndex) => {
                     const helperShort = String(helperPub || "").slice(-4) || String(txIndex + 1);
-                    const txHash = getStellarTransactionHash(transaction);
-                    if (txHash && !lastSubmittedHash) {
-                         lastSubmittedHash = txHash;
+                    const knownTxHash = txHash || getStellarTransactionHash(transaction);
+                    if (knownTxHash && !lastSubmittedHash) {
+                         lastSubmittedHash = knownTxHash;
                     }
 
                     const targets = CLASSIC_SUBMIT_TO_ALL_HORIZONS
@@ -15522,7 +15619,17 @@ async function executeBot(config) {
                          );
 
                          signedTransactions = await buildAndSignTransactions(0n);
-                         workerLog(`[${botName}] ✅ Built & saved ${signedTransactions.length} signed XDR in memory`, "success");
+                         signedTransactionCount = signedTransactions.length;
+                         const savedToRedis = await saveSignedTransactionsToRedis(botName, signedTransactions, submitAtMs).catch((error) => {
+                              workerLog(`[${botName}] ⚠️ Gagal simpan signed XDR ke Redis lokal: ${error.message}`, "warning");
+                              return false;
+                         });
+                         if (savedToRedis) {
+                              signedTransactions = [];
+                              workerLog(`[${botName}] ✅ Built & saved ${signedTransactionCount} signed XDR ke Redis lokal worker; memory XDR dibersihkan.`, "success");
+                         } else {
+                              workerLog(`[${botName}] ⚠️ Built & saved ${signedTransactionCount} signed XDR in memory fallback`, "warning");
+                         }
                          schedulePreSignedSubmit();
                      }
                      if (hasBuilt && !hasSubmitted && diffToUnlock <= SUBMIT_BEFORE_MS && !submitTimer && !submitPromise) {
@@ -15659,6 +15766,9 @@ async function executeBot(config) {
 
                          workerLog(`[${botName}] 📌 Status akhir terkunci: ${finalStatus}`, "success");
                          await releaseBotSequenceReservations(botName);
+                         await deleteSignedTransactionsFromRedis(botName).catch((error) => {
+                              workerLog(`[${botName}] ⚠️ Gagal hapus signed XDR Redis: ${error.message}`, "warning");
+                         });
 
                          if (ledgerStreamCloser) {
                               ledgerStreamCloser();
@@ -15678,6 +15788,9 @@ async function executeBot(config) {
 
                     releaseLoadingLock(botName);
                     await releaseBotSequenceReservations(botName);
+                    await deleteSignedTransactionsFromRedis(botName).catch((cleanupError) => {
+                         workerLog(`[${botName}] ⚠️ Gagal cleanup signed XDR Redis: ${cleanupError.message}`, "warning");
+                    });
 
                     if (ledgerStreamCloser) {
                          ledgerStreamCloser();
@@ -16525,7 +16638,7 @@ PM2_AUTO_SAVE=true
 HELPERS_PER_WORKER=100
 WORKER_SERVER_ONLY=true
 LOAD_BEFORE_MS=180000
-# true = setelah helper load, langsung build/sign dan simpan signed XDR di memory.
+# true = setelah helper load, langsung build/sign dan simpan signed XDR ke Redis lokal worker.
 # false = build/sign menunggu BUILD_BEFORE_MS seperti mode lama.
 BUILD_AFTER_LOAD=false
 BUILD_BEFORE_MS=180000
@@ -16533,6 +16646,8 @@ SUBMIT_BEFORE_MS=3000
 SUBMIT_CONCURRENCY=100
 SUBMIT_WAVE_COUNT=1
 SUBMIT_WAVE_DELAY_MS=0
+SIGNED_XDR_REDIS_STORE=true
+SIGNED_XDR_STORE_TTL_MS=900000
 # sync = seperti Python stellar_sdk Server.submit_transaction() -> /transactions
 # async = /transactions_async, hanya accepted/pending lalu diverifikasi ke ledger
 SUBMIT_ENDPOINT_MODE=async
