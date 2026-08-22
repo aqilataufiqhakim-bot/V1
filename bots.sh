@@ -7025,6 +7025,11 @@ async function promptNewBotManualUnlock(chatId, callbackQuery = null, state = nu
     return callbackQuery ? telegramEditOrSend(callbackQuery, text, newBotCancelKeyboard()) : telegramSend(chatId, text, newBotCancelKeyboard());
 }
 
+function formatMemoChoiceLabel(customMemo) {
+    const memo = String(customMemo ?? "AUTO").trim();
+    return memo === "" ? "Tanpa Memo" : memo;
+}
+
 async function renderNewBotMemoPicker(chatId, editQuery = null, state = null) {
     state = state || getNewBotWizard(chatId);
     if (!state) return startNewBotWizard(chatId, editQuery);
@@ -7034,12 +7039,13 @@ async function renderNewBotMemoPicker(chatId, editQuery = null, state = null) {
         inline_keyboard: [
             [{ text: "✅ Auto memo", callback_data: "botnew:memo:auto" }],
             [{ text: "✍️ Manual memo", callback_data: "botnew:memo:manual" }],
+            [{ text: "🚫 Tanpa Memo", callback_data: "botnew:memo:none" }],
             [{ text: "❌ Batal", callback_data: "botnew:cancel" }],
         ],
     };
     const text = [
-        "<b>Auto memo</b>",
-        `Saat ini: <code>${escapeTelegramHtml(state.data.custom_memo || "AUTO")}</code>`,
+        "<b>Memo</b>",
+        `Saat ini: <code>${escapeTelegramHtml(formatMemoChoiceLabel(state.data.custom_memo))}</code>`,
     ].join("\n");
     return editQuery ? telegramEditOrSend(editQuery, text, keyboard) : telegramSend(chatId, text, keyboard);
 }
@@ -7133,7 +7139,7 @@ function buildNewBotPayload(data) {
         claimable_balance_id: selectedClaimableIds.length ? selectedClaimableIds.join(",") : null,
         claimable_balance_ids: selectedClaimableIds,
         transaction_type: data.transaction_type,
-        custom_memo: data.custom_memo || "AUTO",
+        custom_memo: Object.prototype.hasOwnProperty.call(data, "custom_memo") ? data.custom_memo : "AUTO",
         topup_helpers: data.transaction_mode === "normal" && Boolean(data.topup_helpers),
         topup_target_balance: data.topup_target_balance || "0.07",
         sweep_helpers: data.transaction_mode === "normal" && Boolean(data.sweep_helpers),
@@ -7195,7 +7201,7 @@ async function renderNewBotReview(chatId, editQuery = null, state = null) {
         lines.push(`Claimable: <b>${selectedClaimableIds.length}</b> selected`);
     }
     lines.push(`Unlock: <code>${escapeTelegramHtml(data.unlock_time || "-")}</code> ${escapeTelegramHtml(formatTimezoneOffset(data.user_timezone))}`);
-    lines.push(`Memo: <code>${escapeTelegramHtml(data.custom_memo || "AUTO")}</code>`);
+    lines.push(`Memo: <code>${escapeTelegramHtml(formatMemoChoiceLabel(data.custom_memo))}</code>`);
     lines.push(`Top Up: <b>${data.transaction_mode === "normal" && data.topup_helpers ? `ON (${data.topup_target_balance})` : "OFF"}</b>`);
     lines.push(`Sweep: <b>${data.transaction_mode === "normal" && data.sweep_helpers ? "ON" : "OFF"}</b>`);
     const keyboard = {
@@ -7487,6 +7493,11 @@ async function handleNewBotWizardCallback(callbackQuery) {
     }
     if (data === "botnew:memo:auto") {
         state.data.custom_memo = "AUTO";
+        saveNewBotWizard(chatId, state);
+        return renderNewBotTopupPicker(chatId, callbackQuery, state);
+    }
+    if (data === "botnew:memo:none") {
+        state.data.custom_memo = "";
         saveNewBotWizard(chatId, state);
         return renderNewBotTopupPicker(chatId, callbackQuery, state);
     }
@@ -9457,7 +9468,7 @@ bump.txt sudah diupdate dan worker PM2 sudah dicoba restart.`,
                 username: data.username || "telegram-admin",
                 user_timezone: data.user_timezone ?? normalizeUserTimezone(settings.user_timezone, 0),
                 status: data.status || "active",
-                custom_memo: data.custom_memo || "AUTO",
+                custom_memo: Object.prototype.hasOwnProperty.call(data, "custom_memo") ? data.custom_memo : "AUTO",
                 created_at: utcIso(),
             };
             if (botData.transaction_type === "claim_and_send" && !botData.amount) {
@@ -11314,7 +11325,7 @@ app.route("/api/bots")
         asyncHandler(async (req, res) => {
             const botData = { ...(req.body || {}) };
 
-            if (!botData.custom_memo || String(botData.custom_memo).trim() === "") {
+            if (botData.custom_memo === undefined || botData.custom_memo === null) {
                 botData.custom_memo = "AUTO";
             }
 
@@ -12764,6 +12775,10 @@ const HELPER_LOAD_RETRY_DELAY_MS = parsePositiveIntEnv("HELPER_LOAD_RETRY_DELAY_
 const HORIZON_REQUEST_DELAY_MS = parsePositiveIntEnv("HORIZON_REQUEST_DELAY_MS", 150, 0, 60000);
 const HORIZON_RATE_LIMIT_COOLDOWN_MS = parsePositiveIntEnv("HORIZON_RATE_LIMIT_COOLDOWN_MS", 20000, 1000, 600000);
 const HORIZON_RATE_LIMIT_JITTER_MS = parsePositiveIntEnv("HORIZON_RATE_LIMIT_JITTER_MS", 500, 0, 60000);
+const EXACT_LEDGER_MODE = String(process.env.EXACT_LEDGER_MODE || "true").trim().toLowerCase() === "true";
+const EXACT_LEDGER_MONITOR_BEFORE_MS = parsePositiveIntEnv("EXACT_LEDGER_MONITOR_BEFORE_MS", 15000, 1000, 300000);
+const EXACT_LEDGER_CLOSE_AVG_MS = parsePositiveIntEnv("EXACT_LEDGER_CLOSE_AVG_MS", 5000, 1000, 30000);
+const EXACT_LEDGER_MAX_OFFSET = parsePositiveIntEnv("EXACT_LEDGER_MAX_OFFSET", 1, 0, 10);
 
 // Shared keep-alive submit pool. Ini padanan Node.js untuk requests.Session + HTTPAdapter
 // pada contoh Python: koneksi TCP/TLS dipakai ulang, bukan dibuat ulang untuk setiap TX.
@@ -12924,9 +12939,29 @@ function stripTransactionPreconditions(tx) {
      return tx;
 }
 
-function applyTransactionBounds(txBuilder, minTime, maxTime) {
-     // Pakai timebounds saja supaya transaksi tidak terkunci ke ledger tertentu.
+function applyTransactionBounds(txBuilder, minTime, maxTime, ledgerBounds = null, botName = WORKER_NAME) {
      txBuilder.setTimebounds(minTime, maxTime);
+     if (!ledgerBounds) {
+          return txBuilder;
+     }
+
+     const minLedger = Number.parseInt(ledgerBounds.minLedger, 10);
+     const maxLedger = Number.parseInt(ledgerBounds.maxLedger, 10);
+     if (!Number.isSafeInteger(minLedger) || !Number.isSafeInteger(maxLedger) || minLedger < 1 || maxLedger < minLedger) {
+          workerLog(`[${botName}] ⚠️ Ledger bounds tidak valid, lanjut pakai timebounds saja.`, "warning");
+          return txBuilder;
+     }
+
+     const setLedgerBounds =
+          typeof txBuilder.setLedgerbounds === "function"
+               ? txBuilder.setLedgerbounds.bind(txBuilder)
+               : (typeof txBuilder.setLedgerBounds === "function" ? txBuilder.setLedgerBounds.bind(txBuilder) : null);
+     if (!setLedgerBounds) {
+          workerLog(`[${botName}] ⚠️ Stellar SDK tidak mendukung setLedgerbounds; lanjut pakai timebounds saja.`, "warning");
+          return txBuilder;
+     }
+
+     setLedgerBounds(minLedger, maxLedger);
      return txBuilder;
 }
 
@@ -13795,6 +13830,53 @@ async function fetchUserEmail(username) {
 
 function createStellarServer(horizonUrl) {
      return new stellar.Horizon.Server(horizonUrl);
+}
+
+async function fetchLatestLedgerSnapshot(horizonUrls, botName = WORKER_NAME) {
+     const urls = normalizeHorizonUrls(horizonUrls);
+     for (const horizonUrl of urls) {
+          try {
+               const server = createStellarServer(horizonUrl);
+               const page = await server.ledgers().order("desc").limit(1).call();
+               const ledger = page?.records?.[0] || page?._embedded?.records?.[0] || null;
+               const sequence = Number.parseInt(ledger?.sequence || ledger?.ledger || ledger?.id, 10);
+               const closedAtMs = Date.parse(ledger?.closed_at || "");
+               if (Number.isSafeInteger(sequence) && Number.isFinite(closedAtMs)) {
+                    return { sequence, closedAtMs, closedAt: new Date(closedAtMs).toISOString(), horizonUrl };
+               }
+          } catch (error) {
+               workerLog(`[${botName}] ⚠️ Gagal baca latest ledger dari ${horizonUrl}: ${error.message}`, "warning");
+          }
+     }
+     return null;
+}
+
+async function resolveExactLedgerBounds(horizonUrls, unlockTimeMs, botName = WORKER_NAME) {
+     if (!EXACT_LEDGER_MODE) {
+          return null;
+     }
+
+     const latest = await fetchLatestLedgerSnapshot(horizonUrls, botName);
+     if (!latest) {
+          workerLog(`[${botName}] ⚠️ Exact Ledger Mode aktif, tapi latest ledger tidak terbaca. Lanjut timebounds saja.`, "warning");
+          return null;
+     }
+
+     const diffMs = unlockTimeMs - latest.closedAtMs;
+     const ledgersAhead = diffMs <= 0 ? 0 : Math.max(1, Math.ceil(diffMs / EXACT_LEDGER_CLOSE_AVG_MS));
+     const targetLedger = latest.sequence + ledgersAhead;
+     const minLedger = targetLedger;
+     const maxLedger = targetLedger + EXACT_LEDGER_MAX_OFFSET;
+
+     return {
+          latestLedger: latest.sequence,
+          latestClosedAt: latest.closedAt,
+          targetLedger,
+          minLedger,
+          maxLedger,
+          ledgersAhead,
+          horizonUrl: latest.horizonUrl,
+     };
 }
 
 function withTimeout(promise, timeoutMs, message) {
@@ -15091,6 +15173,7 @@ async function executeBot(config) {
           let signedTransactions = [];
           let signedTransactionCount = 0;
           let ledgerStreamCloser = null;
+          let exactLedgerBounds = null;
 
           const stopTime = new Date(unlockTimeMs + 10000);
 
@@ -15105,9 +15188,22 @@ async function executeBot(config) {
                // Timezone VPS tidak memengaruhi hitungan ini karena memakai epoch UTC.
                const maxTime = Math.floor((submitAtMs + TRANSACTION_TIMEOUT_MS) / 1000);
                workerLog(
-                    `[${botName}] Timebounds WIN: minTime=${minTime}, maxTime=${maxTime} (valid sampai call submit + ${TRANSACTION_TIMEOUT_MS}ms, tanpa ledger bounds).`,
+                    `[${botName}] Timebounds WIN: minTime=${minTime}, maxTime=${maxTime} (valid sampai call submit + ${TRANSACTION_TIMEOUT_MS}ms).`,
                     "info"
                );
+               if (EXACT_LEDGER_MODE && !exactLedgerBounds) {
+                    exactLedgerBounds = await resolveExactLedgerBounds(
+                         finalOnlineServers.length > 0 ? finalOnlineServers : horizonCandidates,
+                         unlockTimeMs,
+                         botName
+                    );
+                    if (exactLedgerBounds) {
+                         workerLog(
+                              `[${botName}] 🎯 Exact Ledger: latest=${exactLedgerBounds.latestLedger} (${exactLedgerBounds.latestClosedAt}), target=${exactLedgerBounds.targetLedger}, bounds=${exactLedgerBounds.minLedger}-${exactLedgerBounds.maxLedger}, ahead=${exactLedgerBounds.ledgersAhead}.`,
+                              "success"
+                         );
+                    }
+               }
                const estimatedFeeChargedStroops = getEstimatedFeeChargedStroops(
                     operations.length,
                     transaction_mode
@@ -15142,7 +15238,7 @@ async function executeBot(config) {
                                    networkPassphrase: NETWORK_PASSPHRASE,
                               }
                          );
-                         applyTransactionBounds(txBuilder, minTime, maxTime);
+                         applyTransactionBounds(txBuilder, minTime, maxTime, exactLedgerBounds, botName);
 
                          if (custom_memo) {
                               let finalMemo = custom_memo;
@@ -15610,11 +15706,14 @@ async function executeBot(config) {
                          releaseLoadingLock(botName);
                     }
 
-                    if (hasPinged && !hasBuilt && (BUILD_AFTER_LOAD || diffToUnlock <= BUILD_BEFORE_MS)) {
+                    const shouldBuildSignedXdr = EXACT_LEDGER_MODE
+                         ? diffToUnlock <= EXACT_LEDGER_MONITOR_BEFORE_MS
+                         : (BUILD_AFTER_LOAD || diffToUnlock <= BUILD_BEFORE_MS);
+                    if (hasPinged && !hasBuilt && shouldBuildSignedXdr) {
                          hasBuilt = true;
                          await updateBotStatus(botName, "preparing", "Signing & Streaming...");
                          workerLog(
-                              `[${botName}] 🔨 Building transactions ${BUILD_AFTER_LOAD ? "right after helper load" : "within submit window"}...`,
+                              `[${botName}] 🔨 Building transactions ${EXACT_LEDGER_MODE ? "with exact ledger monitoring" : (BUILD_AFTER_LOAD ? "right after helper load" : "within submit window")}...`,
                               "info"
                          );
 
@@ -16297,6 +16396,10 @@ async function checkWebServiceConnectivity() {
                `⚡ Fast claim WIN engine: load=${LOAD_BEFORE_MS}ms build=${BUILD_AFTER_LOAD ? "after-load" : `${BUILD_BEFORE_MS}ms`} submit=${SUBMIT_BEFORE_MS}ms timeout=${TRANSACTION_TIMEOUT_MS}ms sequenceManager=${SEQUENCE_MANAGER_ENABLED} submitMode=${SUBMIT_ENDPOINT_MODE} submitConcurrency=${SUBMIT_CONCURRENCY} submitWaves=${SUBMIT_WAVE_COUNT} waveDelay=${SUBMIT_WAVE_DELAY_MS}ms httpMaxSockets=${SUBMIT_HTTP_MAX_SOCKETS} httpTimeout=${SUBMIT_HTTP_TIMEOUT_MS}ms tick=${FAST_TICK_MS}ms maxHorizons=${formatSubmitHorizonLimit(MAX_SUBMIT_HORIZONS)} workerServerOnly=${WORKER_SERVER_ONLY} oneServer100=${MAX_SUBMIT_HORIZONS === 1 && HELPERS_PER_WORKER === 100}`,
                "info"
           );
+          workerLog(
+               `🎯 Exact Ledger Mode: ${EXACT_LEDGER_MODE ? `ON monitor=${EXACT_LEDGER_MONITOR_BEFORE_MS}ms avg=${EXACT_LEDGER_CLOSE_AVG_MS}ms maxOffset=${EXACT_LEDGER_MAX_OFFSET}` : "OFF"}`,
+               EXACT_LEDGER_MODE ? "success" : "info"
+          );
           const telegramSettings = redisReady ? await getTelegramSettings() : { botToken: "", chatId: "" };
           workerLog(`Telegram Redis settings: ${telegramSettings.botToken && telegramSettings.chatId ? "Configured" : "Not configured"}`, "info");
 
@@ -16669,6 +16772,10 @@ HORIZON_PING_TIMEOUT_MS=5000
 HORIZON_REQUEST_DELAY_MS=150
 HORIZON_RATE_LIMIT_COOLDOWN_MS=20000
 HORIZON_RATE_LIMIT_JITTER_MS=500
+EXACT_LEDGER_MODE=true
+EXACT_LEDGER_MONITOR_BEFORE_MS=15000
+EXACT_LEDGER_CLOSE_AVG_MS=5000
+EXACT_LEDGER_MAX_OFFSET=1
 # 1 = satu server Horizon untuk 100 TX per worker. 0 = unlimited.
 MAX_SUBMIT_HORIZONS=1
 HELPER_LOAD_CONCURRENCY=5
